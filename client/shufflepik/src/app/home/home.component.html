@@ -1,0 +1,203 @@
+<div class="grid home">
+  <mat-icon
+    *ngIf="navigateToUpload"
+    (click)="navToGuildSelection()"
+    class="material-icons-outlined md-48 navigate-before"
+  >
+    navigate_before
+  </mat-icon>
+  <mat-icon
+    *ngIf="selectedGuilds.length > 0 && imagePreview && !navigateToUpload"
+    (click)="navToUpload()"
+    class="material-icons-outlined md-48 navigate-next"
+  >
+    navigate_next
+  </mat-icon>
+
+  <form
+    *ngIf="currentUser.discord.connected"
+    [formGroup]="uploadForm"
+    class="grid upload-card"
+  >
+    <div class="upload-card__title">
+      <h1>Upload Image</h1>
+    </div>
+    <ng-container *ngIf="currentUser.email_validation.validated">
+      <div
+        *ngIf="!imagePreview; else previewImageOnScreen"
+        [ngClass]="{ 'upload-card__image-select--error': uploadImageMessage }"
+        fileUpload
+        (onFileDropped)="uploadFileEvt($event)"
+        class="upload-card__image-select"
+      >
+        <h1
+          [ngClass]="{ 'upload-card__image-select--error': uploadImageMessage }"
+          class="upload-card__image-instructions"
+        >
+          <span *ngIf="!uploadImageMessage">Drag and drop an image</span>
+          <span *ngIf="uploadImageMessage">{{ uploadImageMessage }}</span>
+          <br /><small>PNG, JPG, JPEG (only). Gif coming soon</small><br />
+        </h1>
+        <div class="upload-card__upload-icon">
+          <mat-icon
+            (click)="fileInput.click()"
+            aria-hidden="false"
+            aria-label="file upload icon"
+            class="material-icons-outlined md-48 upload-icon"
+          >
+            file_upload
+          </mat-icon>
+          <input
+            (change)="uploadFileEvt($event)"
+            #fileInput
+            formControlName="image"
+            type="file"
+            name="image"
+            multiple="multiple"
+            accept="image/*"
+            class="upload-card__image-upload"
+          />
+        </div>
+      </div>
+      <ng-template #previewImageOnScreen>
+        <mat-icon
+          (click)="resetUpload()"
+          class="material-icons-outlined md-24 cancel-upload-icon"
+          id="cancel-upload-icon"
+          >close
+        </mat-icon>
+        <div class="upload-card__image-select--selected">
+          <figure>
+            <img
+              (click)="openImageDialog(imgUrl)"
+              *ngIf="imgUrl"
+              [ngStyle]="{ background: 'url(' + imgUrl + ')' }"
+              class="image-preview"
+            />
+          </figure>
+        </div>
+      </ng-template>
+    </ng-container>
+    <ng-container
+      *ngIf="
+        currentUser.discord.connected && !currentUser.email_validation.validated
+      "
+    >
+      <h2 class="confirm-email-prompt">
+        I hate to do this to you but you must validate ✔ your email before
+        uploading pics 🖼️
+      </h2>
+    </ng-container>
+    <div class="upload-card__group-include"></div>
+    <div class="upload-card__image-title">
+      <mat-form-field
+        *ngIf="imagePreview && selectedGuilds.length > 0 && navigateToUpload"
+        class=""
+      >
+        <mat-label>Title of image</mat-label>
+        <input
+          formControlName="imageTitle"
+          matInput
+          placeholder="My favorite picture of all time!"
+        />
+        <mat-error
+          *ngIf="uploadForm.controls['imageTitle'].hasError('required')"
+          >Title required</mat-error
+        >
+      </mat-form-field>
+    </div>
+    <div class="upload-card__image-submit">
+      <button
+        *ngIf="
+          imagePreview &&
+          !upload &&
+          selectedGuilds.length > 0 &&
+          navigateToUpload
+        "
+        mat-stroked-button
+        (click)="uploadFile()"
+      >
+        Submit
+      </button>
+      <mat-progress-bar
+        *ngIf="upload"
+        mode="determinate"
+        [value]="simulatedProgressValue"
+      ></mat-progress-bar>
+    </div>
+    <ng-container *ngIf="currentUser.discord.guilds">
+      <h2
+        *ngIf="
+          currentUser.discord.guilds.length == 0 &&
+          !navigateToUpload &&
+          navigateToGuildSelection
+        "
+        class="bot-not-installed-prompt"
+      >
+        You need to have the Shufflepik bot installed on the servers you wish to
+        share pictures to.
+      </h2>
+      <div
+        *ngIf="
+          currentUser.discord.guilds.length > 0 &&
+          !navigateToUpload &&
+          navigateToGuildSelection
+        "
+        class="discord-user-guilds"
+      >
+        <h2 class="discord-user-guilds__title">
+          Server Pools To Upload Image To
+        </h2>
+        <div class="guild-list">
+          <div
+            *ngFor="
+              let guild of currentUser.discord.guilds;
+              let guildIndex = index
+            "
+            (click)="selectGuild(guild.id)"
+            [className]="
+              selectedGuilds.includes(guild?.id)
+                ? 'guild-item--selected'
+                : 'guild-item'
+            "
+          >
+            <div
+              *ngIf="guild?.icon"
+              [ngStyle]="{
+                background:
+                  'url(https://cdn.discordapp.com/icons/' +
+                  guild?.id +
+                  '/' +
+                  guild?.icon +
+                  '.png)'
+              }"
+              class="guild-item__icon"
+            ></div>
+            <div
+              *ngIf="!guild?.icon"
+              [ngStyle]="{
+                background:
+                  'url(../../assets/global-images/discord-placeholder.png)'
+              }"
+              class="guild-item__icon"
+            ></div>
+            <div class="guild-item__name">{{ guild?.name }}</div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </form>
+
+  <div *ngIf="!currentUser.discord.connected" class="welcome-message">
+    <h2>✨🎊 Welcome to Shufflepik! 🎉🎈</h2>
+    <h3 *ngIf="welcomeMessage">{{ welcomeMessage }}</h3>
+  </div>
+  <button
+    *ngIf="!currentUser.discord.connected"
+    (click)="connectDiscord()"
+    matRipple
+    class="connect-discord-button"
+  >
+    Connect Discord
+  </button>
+</div>

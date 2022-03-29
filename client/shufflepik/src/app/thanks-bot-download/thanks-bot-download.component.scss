@@ -1,0 +1,165 @@
+$dark-purp: #5555aa;
+$light-purp: #6666cc;
+$highlight-purp: #3601d6;
+$d-purp: #5865f2;
+
+.thank {
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  background-color: $dark-purp;
+  height: 100vh;
+  width: 100vw;
+}
+
+.sp-logo,
+.thank-message,
+.options-card {
+  grid-column: 2/11;
+  color: #ffffff;
+}
+
+.sp-logo,
+.thank-message {
+  place-self: center;
+  text-align: center;
+}
+
+.sp-logo,
+.sp-button,
+.discord-button {
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+}
+
+.sp-logo {
+  grid-row: 1/2;
+  background-image: url("../../assets/global-images/sp-logo-white.png");
+  background-repeat: no-repeat;
+  //background-size: 200px;
+  background-size: 125px;
+  background-position: center;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+}
+
+.options-card {
+  background-color: $light-purp;
+  //grid-row: 5/9;
+  align-self: start;
+  grid-row: 6/10;
+  margin: 0;
+  padding: 5px 0;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  place-items: center;
+  .sp-heading,
+  .discord-heading,
+  .sp-button,
+  .discord-button {
+    padding: 0px 15px;
+  }
+  .sp-heading {
+    grid-row: 1/5;
+    grid-column: 1/3;
+    text-align: center;
+  }
+  .discord-heading {
+    grid-row: 1/5;
+    grid-column: 4/6;
+    text-align: center;
+  }
+  .sp-button {
+    min-height: 47.5px;
+    min-width: 125px;
+    border: none;
+    //background-color: #ffffff;
+    background-color: transparent;
+    grid-row: 6/8;
+    grid-column: 1/3;
+    background-image: url("../../assets/global-images/sp-logo-white.png");
+    background-size: 85px;
+  }
+  .discord-button {
+    min-height: 47.5px;
+    min-width: 125px;
+    border: none;
+    //background-color: #ffffff;
+    background-color: transparent;
+    grid-row: 6/8;
+    grid-column: 4/6;
+    background-image: url("../../assets/global-images/discord-logo-white.png");
+    background-size: 55px;
+  }
+}
+
+.options-card,
+.sp-button,
+.discord-button {
+  border-radius: 30px;
+}
+
+.thank-message {
+  //grid-row: 2/4;
+  grid-row: 3/5;
+  font-size: 18px;
+  //color: ;
+}
+
+.thank-options {
+  grid-row: 6/9;
+  //grid-row: 6/10;
+  align-self: start;
+}
+
+.redir-login {
+}
+
+// Small devices (landscape phones, 576px and up)
+@media (min-width: 576px) {
+}
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 768px) {
+}
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 992px) {
+  .thank-message {
+    grid-row: 2/4;
+    font-size: inherit;
+    font-size: 24px;
+  }
+
+  .sp-logo,
+  .thank-message,
+  .options-card {
+    grid-column: 3/10;
+  }
+
+  .sp-logo {
+    background-size: 200px;
+  }
+  .options-card {
+    grid-row: 5/9;
+    align-self: inherit;
+    .sp-button {
+      background-color: #ffffff;
+      background-image: url("../../assets/global-images/sp-logo-purp-grad.png");
+    }
+
+    .discord-button {
+      background-color: #ffffff;
+      background-image: url("../../assets/global-images/discord-logo.png");
+    }
+  }
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) {
+}
+
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1400px) {
+}

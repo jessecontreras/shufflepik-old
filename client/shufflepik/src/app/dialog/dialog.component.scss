@@ -1,0 +1,63 @@
+// X-Small devices (portrait phones, less than 576px)
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/*This is a global style TODO: Place in a global sheet on the next pass.*/
+.cancel-upload-icon {
+  // grid-area: 2/11/3/12;
+  //grid-area: 2/10/3/11;
+  cursor: pointer;
+  height: 24px;
+  width: 24px;
+  place-self: center;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 5px;
+}
+
+.dialog-body {
+}
+
+.dialog-image {
+  height: 65vh;
+  //width: 65vw;
+  width: 75vw;
+  display: block;
+  object-fit: contain;
+  margin: auto;
+
+  /*background-position: center !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;*/
+}
+
+.mat-dialog-container {
+  overflow: hidden !important;
+}
+
+// Small devices (landscape phones, 576px and up)
+@media (min-width: 576px) {
+}
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 768px) {
+}
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 992px) {
+  .dialog-image {
+    width: 65vw;
+  }
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) {
+}
+
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1400px) {
+}

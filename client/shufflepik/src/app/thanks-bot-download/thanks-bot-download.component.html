@@ -1,0 +1,19 @@
+<div class="grid thank">
+  <div [routerLink]="['/home']" class="sp-logo"></div>
+  <h1 class="thank-message">
+    You successfully added Shufflepik 🤖 (Bot) to your server. Thank you so much
+    for joining us! Please sign up for a Sufflepik account if you haven't done
+    so.
+  </h1>
+  <div class="grid options-card">
+    <div class="sp-heading">
+      <h3>Visit Shufflepik</h3>
+    </div>
+    <button [routerLink]="['/home']" class="sp-button"></button>
+
+    <div class="discord-heading">
+      <h3>Go back to Discord</h3>
+    </div>
+    <button matRipple (click)="goToDiscord()" class="discord-button"></button>
+  </div>
+</div>

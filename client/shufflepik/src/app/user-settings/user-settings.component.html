@@ -1,0 +1,125 @@
+<div class="grid user-settings">
+  <div class="header">
+    <ng-container *ngIf="user.discord.connected; else discordNotConnected">
+      <div class="avatar">
+        <img
+          [style.background]="'url(' + user.discord.avatar + ')'"
+          class="avatar-img"
+        />
+      </div>
+      <div class="username">{{ user.discord.username }}</div>
+    </ng-container>
+    <ng-template #discordNotConnected>
+      <div class="avatar account-circle">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+      <div class="username">Shufflepik user</div>
+    </ng-template>
+    <div class="email">{{ user.email }}</div>
+  </div>
+  <div class="setting-sub-header-title discord-header">DISCORD</div>
+  <div class="section discord-section"></div>
+  <div class="section-icon discord-first-option">
+    <img
+      *ngIf="!user.discord.connected"
+      src="../../assets/icons/discord-icon-small.svg"
+    />
+    <img
+      *ngIf="user.discord.connected"
+      src="../../assets/icons//discord-icon-small-purple.svg"
+    />
+  </div>
+  <div class="section-text discord-first-option">
+    Discord <span *ngIf="!user.discord.connected">Not </span>Connected
+  </div>
+  <div class="section-cta discord-first-option">
+    <mat-icon
+      [className]="user.discord.connected ? 'cta-dot--active' : 'cta-dot'"
+    >
+      fiber_manual_record
+    </mat-icon>
+  </div>
+  <div class="section-icon discord-second-option">
+    <mat-icon *ngIf="user.discord.connected"> numbers </mat-icon>
+  </div>
+  <div class="section-icon discord-second-option">
+    <mat-icon *ngIf="!user.discord.connected">
+      swap_horizontal_circle
+    </mat-icon>
+  </div>
+  <div
+    *ngIf="user.discord.connected"
+    class="section-text discord-second-option"
+  >
+    Your server's on Shufflepik
+  </div>
+  <div
+    *ngIf="!user.discord.connected"
+    class="section-text discord-second-option"
+  >
+    Connect Discord account
+  </div>
+
+  <div
+    *ngIf="user.discord.connected && user.albums"
+    class="section-cta discord-second-option"
+  >
+    {{ user.albums.length }}
+  </div>
+  <div
+    *ngIf="!user.discord.connected"
+    class="section-cta discord-second-option"
+    (click)="connectDiscord()"
+  >
+    <mat-icon>highlight_alt</mat-icon>
+  </div>
+  <div class="setting-sub-header-title shufflepik-header">SHUFFLEPIK</div>
+  <div class="section shufflepik-section"></div>
+  <div class="section-icon shufflepik-first-option">
+    <mat-icon> policy </mat-icon>
+  </div>
+  <div class="section-text shufflepik-first-option">Privacy Policy</div>
+  <div
+    class="section-cta shufflepik-first-option"
+    (click)="openLink('/privacy-policy')"
+  >
+    <mat-icon>open_in_new</mat-icon>
+  </div>
+  <div
+    *ngIf="!deleteAccountPrompt"
+    class="section-icon shufflepik-second-option"
+  >
+    <mat-icon
+      #tooltip="matTooltip"
+      matTooltip="This action deletes your content, is permanent and cannot be reversed."
+      [matTooltipPosition]="tooltipPosition"
+      aria-label="A tooltip that hides when scrolled out of container. Gives user extra information."
+    >
+      warning
+    </mat-icon>
+  </div>
+  <div
+    *ngIf="!deleteAccountPrompt"
+    class="section-text shufflepik-second-option"
+  >
+    Delete Account
+  </div>
+  <div
+    *ngIf="!deleteAccountPrompt"
+    class="section-cta shufflepik-second-option"
+    (click)="promptAccountDeletion()"
+  >
+    <mat-icon>delete_forever</mat-icon>
+  </div>
+  <div
+    *ngIf="deleteAccountPrompt"
+    class="section-delete-account-forever"
+    (click)="deleteAccount()"
+  >
+    <p>Delete Account Forever</p>
+    <p (click)="undoDeleteAccount()">Undo</p>
+  </div>
+  <div class="settings-footer">
+    <p>Shufflepik<mat-icon>copyright</mat-icon> 2022</p>
+  </div>
+</div>

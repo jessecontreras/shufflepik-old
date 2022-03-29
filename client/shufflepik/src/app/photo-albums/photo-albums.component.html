@@ -1,0 +1,41 @@
+
+<div class="photo-albums">
+  <div class="grid albums-wrapper">
+    <ng-container
+      *ngIf="
+        albums && masonClasses && albums.length === albumCovers.length;
+        else loadingTemplate
+      "
+    >
+      <ng-container *ngFor="let albumCover of albumCovers; let i = index">
+        <div [className]="masonClasses[i]">
+          <ng-container *ngIf="albumCover != 'false'; else emptyAlbum">
+
+            <img
+              [src]="albumCover"
+              [alt]="albums[i].images[albums[i].images.length - 1].image_title"
+              routerLink="/album/{{ albums[i].id }}"
+            />
+            <div class="album-title">
+              {{ albums[i].name }}
+            </div>
+          </ng-container>
+          <ng-template #emptyAlbum>
+            <div
+              class="empty-album-block empty-album-gradient"
+              routerLink="/album/{{ albums[i].id }}"
+            ></div>
+            <div class="album-title">{{ albums[i].name }} - Empty</div>
+          </ng-template>
+        </div>
+      </ng-container>
+    </ng-container>
+    <ng-template #loadingTemplate>
+      <ng-container *ngFor="let album of albums; let i = index">
+        <div [className]="masonClasses[i]">
+          <div class="album-cover--loading"></div>
+        </div>
+      </ng-container>
+    </ng-template>
+  </div>
+</div>
