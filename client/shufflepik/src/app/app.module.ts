@@ -21,7 +21,6 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { ThanksBotDownloadComponent } from './thanks-bot-download/thanks-bot-download.component';
 import { httpInterceptorProviders } from './_interceptors';
 import { ImageComponent } from './image/image.component';
-import { KeyEventComponent } from './key-event/key-event.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
@@ -43,13 +42,13 @@ import { UploadDirective } from './_directives/upload.directive';
     ResetPasswordComponent,
     ThanksBotDownloadComponent,
     ImageComponent,
-    KeyEventComponent,
+
     TermsComponent,
     PrivacyPolicyComponent,
     UserSettingsComponent,
     AuthImagePipe,
     UploadDirective,
-   // ImageLoadCheckDirective,
+    // ImageLoadCheckDirective,
   ],
   imports: [
     BrowserModule,

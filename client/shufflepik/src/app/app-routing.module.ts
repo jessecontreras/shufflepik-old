@@ -10,7 +10,6 @@ import { AlbumComponent } from './album/album.component';
 import { AuthGuard } from './_helpers/auth.guard';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { ThanksBotDownloadComponent } from './thanks-bot-download/thanks-bot-download.component';
-import { KeyEventComponent } from './key-event/key-event.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';

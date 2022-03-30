@@ -15,6 +15,7 @@ import { DialogService } from '../_services/dialog.service';
 import { Upload } from '../_helpers/upload';
 import { User } from '../_models/user.model';
 import { DialogData } from '../_models/dialog.model';
+import { WelcomeMessageGeneratorService } from '../_services/welcome-message-generator';
 
 @Component({
   selector: 'home',
@@ -29,7 +30,7 @@ export class HomeComponent {
     private accountService: AccountService,
     private discordService: DiscordService,
     private dialogService: DialogService,
-    private route: ActivatedRoute
+    private messageGenerator: WelcomeMessageGeneratorService
   ) {
     //this.userSubcsription();
   }
@@ -88,18 +89,31 @@ export class HomeComponent {
   //Discord user object
   @Input() currentUser!: User;
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.reactiveUploadForm();
-    this.welcomeMessageGenerator();
-    this.manageAccountSubscription();
     this.userSubcsription();
+    this.generateWelcomeMessage();
+  }
+
+  /**
+   * Generates a welcome message if user does not have discord connected.
+   */
+  async generateWelcomeMessage() {
+    try {
+      if (this.currentUser.discord) {
+        if (!this.currentUser.discord.connected) {
+          this.welcomeMessage =
+            await this.messageGenerator.generateWelcomeMessage();
+        }
+      }
+    } catch (err) {}
   }
 
   /**
    * If we have query parameters, this means user will have to be integrated.
    * Shufflepik and Discord data will be merged for a specific user.
    */
-  async manageAccountSubscription() {
+  /*async manageAccountSubscription() {
     try {
       // this.accountService.currentUser.subscribe;
       this.route.queryParams.subscribe((params) => {
@@ -117,7 +131,7 @@ export class HomeComponent {
             this.accountService.currentUserValue._id,
             params[this.UserKeyEvent.RefreshUserData]
           );
-        }*/
+        }
       });
       /*this.route.paramMap.pipe(
         switchMap((params) => {
@@ -125,12 +139,12 @@ export class HomeComponent {
           console.log(params);
           return;
         })
-      );*/
+      );
     } catch (err) {
       console.log(err);
       throw err;
     }
-  }
+  }*/
 
   async userSubcsription() {
     try {
@@ -428,12 +442,12 @@ export class HomeComponent {
     }
   }
 
-  welcomeMessageGenerator() {
+  /*welcomeMessageGenerator() {
     try {
       const messages = [
-        "I know you think I say this to everyone, but I think you're special. Let's make this Discord official and connect your Discord to Shufflepik.",
-        'Before you can upload anything to Shufflepik you gotta connected your Discord account. Lame huh? I know.',
-        "There's a saying, if you give a person a fish you'll feed them for a day...how does that one go? Err, uh, can't get fooled again.",
+        "I know you think I say this to everyone, but I think you're special. Let's make this official and connect your Discord to Shufflepik.",
+        'Before you can upload anything to Shufflepik you gotta connect your Discord account. Lame huh? I know.',
+        "There's a saying, if you give a person a fish you'll feed them for a day...how does the rest go? Err, uh, can't get fooled again.",
         "Clearly you're a rockstar photographer, why haven't you connected your discord account to share all your wonderful pics?",
         'Connect your Discord account, that is all!',
         "If this were a movie you'd be the super hero just by connecting your Discord account to Shufflepik.",
@@ -456,7 +470,7 @@ export class HomeComponent {
       console.log(err);
       throw err;
     }
-  }
+  }*/
 
   resetUpload() {
     this.imagePreview = false;
@@ -486,8 +500,7 @@ export class HomeComponent {
       if (
         mimeType == 'image/jpg' ||
         mimeType == 'image/jpeg' ||
-        mimeType == 'image/png' ||
-        mimeType == 'image/gif'
+        mimeType == 'image/png'
       )
         return true;
 
