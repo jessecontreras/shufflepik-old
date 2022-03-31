@@ -26,6 +26,9 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
 import { UserSettingsComponent } from './user-settings/user-settings.component';
 import { AuthImagePipe } from './_pipes/auth-image.pipe';
 import { UploadDirective } from './_directives/upload.directive';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
+import { SpSnackBarComponent } from './sp-snackbar/sp-snackbar.component';
 //import { ImageLoadCheckDirective } from './_directives/image-load-check.directive';
 @NgModule({
   declarations: [
@@ -48,6 +51,7 @@ import { UploadDirective } from './_directives/upload.directive';
     UserSettingsComponent,
     AuthImagePipe,
     UploadDirective,
+    SpSnackBarComponent,
     // ImageLoadCheckDirective,
   ],
   imports: [
@@ -59,6 +63,12 @@ import { UploadDirective } from './_directives/upload.directive';
     ReactiveFormsModule,
     HttpClientModule,
     RouterModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
   providers: [httpInterceptorProviders],
   bootstrap: [AppComponent],
