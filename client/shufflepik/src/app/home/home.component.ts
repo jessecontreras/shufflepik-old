@@ -452,7 +452,7 @@ export class HomeComponent {
    * File size checker, ensures files are lower than max file size, returns false if not.
    *
    * @param {file} file - More than likely an image file.
-   * @returns a boolean answering the question: 'is file too large?'.
+   * @returns {boolean} flag .
    */
   async checkImageFileSize(imageFile: any) {
     try {
