@@ -296,7 +296,7 @@ mat-progress-bar {
 /*Re-style dialog header since it won't have a title*/
 .dialog-header {
   display: flex;
-  justify-content: end !important;
+  justify-content: flex-end !important;
   align-items: center;
 }
 

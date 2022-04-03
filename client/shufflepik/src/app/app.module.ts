@@ -21,12 +21,14 @@ import { ResetPasswordComponent } from './reset-password/reset-password.componen
 import { ThanksBotDownloadComponent } from './thanks-bot-download/thanks-bot-download.component';
 import { httpInterceptorProviders } from './_interceptors';
 import { ImageComponent } from './image/image.component';
-import { KeyEventComponent } from './key-event/key-event.component';
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
 import { AuthImagePipe } from './_pipes/auth-image.pipe';
 import { UploadDirective } from './_directives/upload.directive';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
+import { SpSnackBarComponent } from './sp-snackbar/sp-snackbar.component';
 //import { ImageLoadCheckDirective } from './_directives/image-load-check.directive';
 @NgModule({
   declarations: [
@@ -43,13 +45,14 @@ import { UploadDirective } from './_directives/upload.directive';
     ResetPasswordComponent,
     ThanksBotDownloadComponent,
     ImageComponent,
-    KeyEventComponent,
+
     TermsComponent,
     PrivacyPolicyComponent,
     UserSettingsComponent,
     AuthImagePipe,
     UploadDirective,
-   // ImageLoadCheckDirective,
+    SpSnackBarComponent,
+    // ImageLoadCheckDirective,
   ],
   imports: [
     BrowserModule,
@@ -60,6 +63,12 @@ import { UploadDirective } from './_directives/upload.directive';
     ReactiveFormsModule,
     HttpClientModule,
     RouterModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      // Register the ServiceWorker as soon as the application is stable
+      // or after 30 seconds (whichever comes first).
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
   ],
   providers: [httpInterceptorProviders],
   bootstrap: [AppComponent],

@@ -44,7 +44,7 @@ export class MediaService {
     private sanitizer: DomSanitizer
   ) {
     console.log('Inside of constructor of this thing.');
-    //this.userSubject = this.accountService.userSubject$;
+    //this.userSubject = this.accountService.userSubject;
 
     /*if (JSON.parse(localStorage.getItem('user')!)) {
           this.userSubject = 
@@ -243,7 +243,7 @@ export class MediaService {
       //Update our image albums
       this.albums![selectedAlbumIndex].images.splice(indexOfDeletedImage, 1);
       //this.userSubject = this.accountService.currentUserSubject;
-      this.userSubject = this.accountService.userSubject$;
+      this.userSubject = this.accountService.userSubject;
       //Replace images array with our new images array.
       //this.albums[selectedAlbumIndex].images = updatedImages;
       this.userSubject.value.albums = this.albums;
@@ -266,22 +266,23 @@ export class MediaService {
   async updateAlbumSubject(imageData: Image[]) {
     try {
       console.log('albums are:');
-      console.log(this.albums);
       const albums = this.albums ? this.albums : [];
+      console.log(this.albums);
+
       for (let i = 0; i < imageData.length; i++) {
         const albumID = imageData[i].image_url.split('/')[2];
         for (let j = 0; j < albums.length; j++) {
           if (albums[j].id === albumID) {
             albums[j].images.push(imageData[i]);
             //this.userSubject = this.accountService.currentUserSubject;
-            this.userSubject = this.accountService.userSubject$;
+            this.userSubject = this.accountService.userSubject;
             this.userSubject.value.albums = albums; //this.albums;
             localStorage.setItem(
               'user',
               JSON.stringify(this.userSubject.value)
             );
             //this.userSubject.next(this.userSubject.value);
-            this.accountService.userSubject$.next(this.userSubject.value);
+            this.accountService.userSubject.next(this.userSubject.value);
           }
         }
       }
