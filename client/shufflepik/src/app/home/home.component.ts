@@ -8,14 +8,15 @@ import { ActivatedRoute } from '@angular/router';
 //import { FileSizeValidator } from '@app/_validators/file-size.validator';
 
 import { Subscription } from 'rxjs';
-import { MediaService } from '../_services/media.service';
-import { AccountService } from '../_services/account.service';
-import { DiscordService } from '../_services/discord.service';
-import { DialogService } from '../_services/dialog.service';
 import { Upload } from '../_helpers/upload';
 import { User } from '../_models/user.model';
 import { DialogData } from '../_models/dialog.model';
 import { WelcomeMessageGeneratorService } from '../_services/welcome-message-generator';
+import { MediaService } from '../_services/media.service';
+import { AccountService } from '../_services/account.service';
+import { DiscordService } from '../_services/discord.service';
+import { DialogService } from '../_services/dialog.service';
+import { ConnectivityService } from '../_services/connectivity.service';
 
 @Component({
   selector: 'home',
@@ -30,9 +31,11 @@ export class HomeComponent {
     private accountService: AccountService,
     private discordService: DiscordService,
     private dialogService: DialogService,
-    private messageGenerator: WelcomeMessageGeneratorService
+    private messageGenerator: WelcomeMessageGeneratorService,
+    private connectivityService: ConnectivityService
   ) {
     //this.userSubcsription();
+    this.dataConnectivitySubscription();
   }
 
   @ViewChild('fileInput')
@@ -74,6 +77,8 @@ export class HomeComponent {
   selectedGuilds: Array<any> = []; //string;
   //If user is new send them a welcome message
   welcomeMessage!: string;
+  //Is the user connected to the internet
+  userHasDataConnection!: boolean;
   //Upload error message enumeration
   UploadErrorMessage = {
     UnacceptableFileType: 'Woah, allowed files only please',
@@ -93,6 +98,7 @@ export class HomeComponent {
     this.reactiveUploadForm();
     this.userSubcsription();
     this.generateWelcomeMessage();
+    this.dataConnectivitySubscription();
   }
 
   /**
@@ -109,53 +115,24 @@ export class HomeComponent {
     } catch (err) {}
   }
 
-  /**
-   * If we have query parameters, this means user will have to be integrated.
-   * Shufflepik and Discord data will be merged for a specific user.
-   */
-  /*async manageAccountSubscription() {
+  async dataConnectivitySubscription() {
     try {
-      // this.accountService.currentUser.subscribe;
-      this.route.queryParams.subscribe((params) => {
-        console.log('MADE IT HERE');
-        console.log("Query string is HEE'YA--HOME COMPONENT");
-        console.log(params);
-        /*if (params[this.UserKeyEvent.IntegrateUser]) {
-          this.discordService.integrateAccounts(
-            this.accountService.currentUserValue._id,
-            params[this.UserKeyEvent.IntegrateUser]
-          );
-        } else if (params[this.UserKeyEvent.RefreshUserData]) {
-          console.log('user key event triggered');
-          this.discordService.refreshUserData(
-            this.accountService.currentUserValue._id,
-            params[this.UserKeyEvent.RefreshUserData]
-          );
-        }
+      this.connectivityService.connectionStatus$.subscribe((isConnected) => {
+        console.log('Does user have data connection?');
+        console.log(isConnected);
+        this.userHasDataConnection = isConnected;
       });
-      /*this.route.paramMap.pipe(
-        switchMap((params) => {
-          console.log('Router params are:');
-          console.log(params);
-          return;
-        })
-      );
     } catch (err) {
       console.log(err);
       throw err;
     }
-  }*/
+  }
 
   async userSubcsription() {
     try {
       this.accountService.userData$.subscribe((user) => {
-        console.log('Made it to user subscription in HOME. USER IS:');
-        console.log(user);
         if (user) {
-          console.log('user data is:');
-          console.log(user);
           this.currentUser = user;
-          console.log('made it here--');
           if (user.discord?.connected) {
             (this.currentUser._id = this.accountService.user._id),
               (this.currentUser.discord!.username = user.discord.username);
@@ -164,20 +141,6 @@ export class HomeComponent {
           }
         }
       });
-      /*this.accountService.currentUser.subscribe((user) => {
-        if (user) {
-          console.log('user data is:');
-          console.log(user);
-          this.currentUser = user;
-          console.log('made it here--');
-          if (user.discord?.connected) {
-            (this.currentUser._id = this.accountService.currentUserValue._id),
-              (this.currentUser.discord!.username = user.discord.username);
-            this.currentUser.discord!.guilds = user.discord.guilds;
-            this.currentUser.discord!.avatar = user.discord.avatar;
-          }
-        }
-      });*/
     } catch (err) {
       console.log(err);
       throw err;
@@ -192,11 +155,15 @@ export class HomeComponent {
   }
 
   async uploadFileEvt(imageFile: any) {
-    console.log('ASDFSDA');
-    console.log(imageFile);
+    //If user doesn't have data connection don't bother with uploading image.
     let targetFile = imageFile.target
       ? imageFile.target.files[0]
       : imageFile[0];
+    if (!this.userHasDataConnection) {
+      this.imagePreview = false;
+      this.navigateToGuildSelection = false;
+      return;
+    }
     //Checks file extension.
     const acceptableFileType = await this.checkImageExt(targetFile);
     const acceptableFileSize = await this.checkImageFileSize(targetFile);
@@ -442,43 +409,13 @@ export class HomeComponent {
     }
   }
 
-  /*welcomeMessageGenerator() {
-    try {
-      const messages = [
-        "I know you think I say this to everyone, but I think you're special. Let's make this official and connect your Discord to Shufflepik.",
-        'Before you can upload anything to Shufflepik you gotta connect your Discord account. Lame huh? I know.',
-        "There's a saying, if you give a person a fish you'll feed them for a day...how does the rest go? Err, uh, can't get fooled again.",
-        "Clearly you're a rockstar photographer, why haven't you connected your discord account to share all your wonderful pics?",
-        'Connect your Discord account, that is all!',
-        "If this were a movie you'd be the super hero just by connecting your Discord account to Shufflepik.",
-        '1 + 1 = 2, but Shufflepik + Discord = Happy. So please connect your Discord account to Shufflepik.',
-        'A person, another person, and another different person walk into a soda bar, they all connect their Discord accounts to Shufflepik.',
-        "Look I don'\t want to tell you what to do but you have to connect your Discord account in order to use Shufflepik.",
-        "Are you a Knicks fan? I'm sorry. You have no control of their ownership but you can control connecting your Discord to Shufflepik.",
-        "What's weirder, Tom Brady not liking Stawberries or that you haven't connected your Discord to Shufflepik?",
-        'I need more friends, please connect your Discord to Shufflepik',
-        "If you're a Cleveland Browns fan then you need to connect Discord to Shufflepik. C'mon, let's get an easy win.",
-      ];
-      const index = Math.floor(Math.random() * messages.length) + 1;
-      console.log(`Index is: ${index}`);
-      const welcomeMessage = messages[index];
-      console.log(welcomeMessage);
-      this.welcomeMessage = welcomeMessage;
-      return;
-      //return welcomeMessage;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
-  }*/
-
   resetUpload() {
+    this.uploadForm.reset();
     this.imagePreview = false;
     this.progressComplete = false;
     this.upload = undefined;
     this.simulateProgress = false;
     this.simulatedProgressValue = 0;
-    this.uploadForm.reset();
     this.selectedFile = new Blob(); //this was changed from false to new Blob
     this.navigateToGuildSelection = false;
     this.imgUrl = null;

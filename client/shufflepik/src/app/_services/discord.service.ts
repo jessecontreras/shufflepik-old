@@ -108,7 +108,7 @@ export class DiscordService {
       //Set returned user in local storage
       localStorage.setItem('user', JSON.stringify(integratedUser));
       //Emit changes to user subject
-      this.accountService.userSubject$.next(integratedUser);
+      this.accountService.userSubject.next(integratedUser);
       //  this.accountService.currentUserSubject.next(integratedUser);
       //Remove albums from user object to avoid redundant data.
       //delete integratedUser.albums;
@@ -133,7 +133,7 @@ export class DiscordService {
       localStorage.setItem('currentItem', JSON.stringify(refreshedUser));
       console.log('Refreshed user is:');
       console.log(refreshedUser);
-      this.accountService.userSubject$.next(refreshedUser);
+      this.accountService.userSubject.next(refreshedUser);
       //   this.accountService.currentUserSubject.next(refreshedUser);
     } catch (err) {
       console.log('Made it to error');

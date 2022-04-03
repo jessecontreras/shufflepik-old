@@ -16,6 +16,7 @@ export class CacheInterceptor implements HttpInterceptor {
 
   intercept(req: HttpRequest<any>, next: HttpHandler) {
     const cachedResponse = this.cache.get(req);
+    
     return cachedResponse
       ? of(cachedResponse)
       : this.sendRequest(req, next, this.cache);

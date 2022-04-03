@@ -34,18 +34,31 @@
           [ngClass]="{ 'upload-card__image-select--error': uploadImageMessage }"
           class="upload-card__image-instructions"
         >
-          <span *ngIf="!uploadImageMessage">Drag and drop an image</span>
+          <span *ngIf="!uploadImageMessage && userHasDataConnection"
+            >Drag and drop an image</span
+          >
           <span *ngIf="uploadImageMessage">{{ uploadImageMessage }}</span>
-          <br /><small>PNG, JPG, JPEG (only). Gif coming soon</small><br />
+          <br /><small *ngIf="userHasDataConnection"
+            >PNG, JPG, JPEG (only). Gif coming soon</small
+          ><br />
         </h1>
         <div class="upload-card__upload-icon">
           <mat-icon
+            *ngIf="userHasDataConnection"
             (click)="fileInput.click()"
             aria-hidden="false"
             aria-label="file upload icon"
             class="material-icons-outlined md-48 upload-icon"
           >
             file_upload
+          </mat-icon>
+          <mat-icon
+            *ngIf="!userHasDataConnection"
+            aria-hidden="false"
+            aria-label="wifi off icon"
+            class="material-icons-outlined md-48 upload-icon"
+          >
+            wifi_off
           </mat-icon>
           <input
             (change)="uploadFileEvt($event)"

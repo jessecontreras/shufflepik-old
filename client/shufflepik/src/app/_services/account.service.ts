@@ -12,16 +12,14 @@ import {
 } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
 
-import { MediaService } from './media.service';
 import { User } from '../_models/user.model';
-import { Album } from '../_models/album.model';
-import { Error } from '../_models/error.model';
+
 
 import { environment } from 'src/environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
-  public userSubject$: BehaviorSubject<User>;
+  public userSubject: BehaviorSubject<User>;
   public userData$: Observable<any>;
 
   constructor(
@@ -29,18 +27,18 @@ export class AccountService {
     private http: HttpClient,
     @Inject(DOCUMENT) private document: Document
   ) {
-    this.userSubject$ = new BehaviorSubject<User>(
+    this.userSubject = new BehaviorSubject<User>(
       JSON.parse(localStorage.getItem('user')!)
     );
-    this.userData$ = this.userSubject$.asObservable();
+    this.userData$ = this.userSubject.asObservable();
   }
 
   public get user(): User {
-    return this.userSubject$.value;
+    return this.userSubject.value;
   }
 
   public get userData(): any {
-    return this.userSubject$.asObservable();
+    return this.userSubject.asObservable();
   }
 
   async login(email: string, password: string) {
@@ -63,7 +61,7 @@ export class AccountService {
       if (response._id) {
         const user = response;
         localStorage.setItem('user', JSON.stringify(user));
-        this.userSubject$.next(user);
+        this.userSubject.next(user);
         return user;
       }
       console.log('There was an error');
@@ -82,7 +80,7 @@ export class AccountService {
       let nullVar;
       let logout = nullVar as unknown;
       logout = null;
-      this.userSubject$.next(logout as User);
+      this.userSubject.next(logout as User);
       this.router.navigate(['/login']);
     } catch (err) {
       console.log(err);
@@ -138,7 +136,7 @@ export class AccountService {
           localStorage.setItem('user', JSON.stringify(user));
 
           // publish updated user to subscribers
-          this.userSubject$.next(user);
+          this.userSubject.next(user);
         }
         return x;
       })
@@ -182,7 +180,7 @@ export class AccountService {
       //Set returned user in local storage
       localStorage.setItem('user', JSON.stringify(integratedUser));
       //Emit changes to user subject
-      this.userSubject$.next(integratedUser);
+      this.userSubject.next(integratedUser);
     } catch (err) {
       console.log(err);
       throw err;
@@ -201,7 +199,7 @@ export class AccountService {
       localStorage.setItem('currentItem', JSON.stringify(refreshedUser));
       console.log('Refreshed user is:');
       console.log(refreshedUser);
-      this.userSubject$.next(refreshedUser);
+      this.userSubject.next(refreshedUser);
     } catch (err) {
       console.log('Made it to error');
       console.log(err);
@@ -264,7 +262,7 @@ export class AccountService {
       localStorage.setItem('user', JSON.stringify(user));
       console.log('New user');
       console.log(user);
-      this.userSubject$.next(user);
+      this.userSubject.next(user);
       return;
     } catch (err) {
       console.log(err);
