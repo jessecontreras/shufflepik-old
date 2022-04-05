@@ -37,6 +37,7 @@ $sp-purple: #4e54c8;
       place-self: center;
       padding: 0px 5px;
       color: #000000;
+      z-index: 1;
     }
     .mobile-display-overlay--hide {
       display: none;
@@ -86,6 +87,7 @@ $sp-purple: #4e54c8;
 
     .open-dialog-area {
       grid-area: 3/1/10/12;
+      z-index: 1;
     }
 
     .album-item {

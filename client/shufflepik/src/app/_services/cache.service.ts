@@ -12,6 +12,7 @@ export class CacheService {
     //The following serves for 'forgot-password' and 'reset-password' routes using includes()
     Password: 'password',
     CreateAccount: 'register',
+    Media: 'media',
   };
   get(req: HttpRequest<any>): HttpResponse<any> | undefined {
     const url = req.urlWithParams;
@@ -24,7 +25,8 @@ export class CacheService {
     if (
       url.includes(this.ExceptionRoutes.Login) ||
       url.includes(this.ExceptionRoutes.CreateAccount) ||
-      url.includes(this.ExceptionRoutes.Password)
+      url.includes(this.ExceptionRoutes.Password) ||
+      url.includes(this.ExceptionRoutes.Media)
     ) {
       return undefined;
     }

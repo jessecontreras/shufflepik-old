@@ -326,7 +326,7 @@ export class HomeComponent {
       console.log('image is:');
       console.log(imageData);
       const dialogData: DialogData = {
-        title: 'Preview',
+        title: '📸  🌃  😎  🌄  💅  🌅  💪  💁‍♀️  🤳  🕺  🐈  🪞  😆',
         image_url: imageData,
         date_posted: '',
       };
