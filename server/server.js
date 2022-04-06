@@ -53,7 +53,7 @@ app.use(
       "/users/forgot-password",
       "/users/send-password-reset",
       "/users/reset-password",
-      //     "/users/ve",
+      "/users/ve",
       //    "/users/send-email-validation",
       "/discord/x-user-info",
       "/discord/install",

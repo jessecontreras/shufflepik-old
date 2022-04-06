@@ -232,7 +232,7 @@ async function validateEmail(token) {
         validateEmailError: Response.ValidateEmailError,
       });
 
-      return `http://localhost:4200/${errorResponse}`;
+      return `http://localhost:8080/${errorResponse}`;
     }
     if (
       new Date() > new Date(account.email_validation.expiration) ||
@@ -242,7 +242,7 @@ async function validateEmail(token) {
         validateEmailError: Response.ValidateEmailError,
       });
 
-      return `http://localhost:4200/${errorResponse}`;
+      return `http://localhost:8080/${errorResponse}`;
     }
 
     const updateConfirmation = await usersCollection.findOneAndUpdate(
@@ -263,7 +263,7 @@ async function validateEmail(token) {
       validateEmailSuccess: Response.ValidateEmailSuccess,
     });
 
-    return `http://localhost:4200/${successResponse}`;
+    return `http://localhost:8080/${successResponse}`;
   } catch (err) {
     console.log(err);
     throw err;
@@ -570,8 +570,6 @@ async function getIntersectingGuildsAndAlbums(
   }
 }
 
-
-
 /**
  * Gets passed user's intersecting guilds and image albums.
  *
@@ -659,8 +657,6 @@ async function getIntersectingGuildsAndUserAlbums(
   }
 }
 
-
-
 async function getUserAlbums() {
   try {
   } catch (err) {
@@ -671,9 +667,7 @@ async function getUserAlbums() {
 
 async function getAll() {}
 
-async function getById(_id) {
-
-}
+async function getById(_id) {}
 
 /**
  * Creates user
@@ -820,15 +814,17 @@ async function emailValidationLink(email) {
 
     const emailOptions = {
       to: email,
-      from: "Shufflepik",
+      from: '"Shufflepik" <no-reply@shufflepik.com>',
       subject: "Please validate email for Shufflepik",
       html: `
             <h2>Welcome to Shufflepik!</h2>
             <h3>We're really excited to welcome you to Shufflepik. Click the link below to verify your email address.\n</h3>
             <p><a href="${process.env.HTTP_TUNNEL}/users/ve?${valTok}">Click here to verify\n</a></p>
             <p>By validating your email you will be able to uploads pictures and memes.</p> 
-            <p>If you did not initiate this request please email us at <a href="mailto:info@shufflepik.com" target="_blank">info@shufflepik.com</a>, however you can ignore this request as this link will expire after some time.<p>
+            <p>If you did not initiate this request please contact us directly, however you can ignore this request as this link will expire after some time.<p>
             <p>Thanks again for signing up with us, we are so stoked to have you on Shufflepik!</p>
+            <br>
+            <small>Please do not reply to this message. We've sent it from a notification-only address, no one will see a reply. If you need help contact us directly <a href="mailto:support@shufflepik.com" target="_blank">support@shufflepik.com</a></small>
           `,
     };
 
@@ -849,11 +845,12 @@ async function emailValidationLink(email) {
 async function getEmailServiceDetails() {
   try {
     const emailService = nodeMailer.createTransport({
-      service: "Gmail",
+      host: "mail.privateemail.com",
       port: 465,
+      secure: true,
       auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS,
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
       },
     });
 
@@ -1351,6 +1348,8 @@ async function emailResetPasswordLink(email) {
 
             <p>If you did not request this password reset please disregard email and ensure your devices have not 
             been compromised.</p>
+            <br>
+            <small>Please do not reply to this message. We've sent it from a notification-only address, no one will see a reply. If you need help contact us directly <a href="mailto:support@shufflepik.com" target="_blank">support@shufflepik.com</a></small>
             `,
     };
 
@@ -1410,7 +1409,7 @@ async function sendPasswordResetPage(token) {
       console.log("reset token invalid");
       return Response.PasswordResetError;
     }
-    return `http://localhost:4200/reset-password/${token}`;
+    return `http://127.0.0.1:8080/reset-password/${token}`;
   } catch (err) {
     console.log(err);
     throw err;
