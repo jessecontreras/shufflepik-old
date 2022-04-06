@@ -25,15 +25,7 @@ for (const file of commandFiles) {
 }
 //Use REST to access discord's guild registration service
 const rest = new REST({ version: "9" }).setToken(process.env.DISCORD_BOT_TOKEN);
-//Register application commands
-/*rest
-  .put(
-    Routes.applicationGuildCommands(
-      process.env.DISCORD_CLIENT_ID,
-      process.env.DISCORD_GUILD_ID
-    ),
-    { body: commands }
-  )*/
+
 rest
   .put(Routes.applicationCommands(process.env.DISCORD_CLIENT_ID), {
     body: commands,

@@ -6,7 +6,6 @@ const fetch = require("node-fetch");
 //Module for URL resolution
 const url = require("url");
 
-
 //import { LocalStorage } from "node-localstorage";
 
 //global.localStorage = new LocalStorage('./scratch');
@@ -49,7 +48,7 @@ async function accessDiscordAccount(req, res) {
     });
 
     //await
-    res.redirect(302, "http://localhost:4200/?" + query);
+    res.redirect(302, "http://localhost:8080/?" + query);
     //res.end();
   } catch (err) {
     console.log(err);
@@ -95,7 +94,7 @@ async function installBot(req, res) {
     console.log("Made it back from controller");
     console.log(serverResponse);
     if (serverResponse) {
-      res.redirect(302, `http://localhost:4200/thanks-bot-download`);
+      res.redirect(302, `http://localhost:8080/thanks-bot-download`);
     }
   } catch (err) {
     console.log(err);
@@ -125,7 +124,7 @@ async function exchangeUserInformation(req, res) {
     console.log("We will send back query");
     console.log(query);
     //await
-    res.redirect(302, `http://localhost:4200/home/?${query}`);
+    res.redirect(302, `http://localhost:8080/home/?${query}`);
     //res.redirect(302, `http://localhost:4200//key-event/?${query}`);
   } catch (err) {
     console.log(err);
@@ -171,7 +170,7 @@ async function integrate(req, res) {
     console.log(integratedUser);
     // return integratedUser;
     //res.json(integratedUser);
-  
+
     res.send(integratedUser);
   } catch (err) {
     console.log(err);

@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 //Load environment variables from .env file
 require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
-//
+
 const { Client, Intents } = require("discord.js");
 
 const discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });

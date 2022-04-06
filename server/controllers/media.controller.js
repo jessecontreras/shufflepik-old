@@ -469,8 +469,8 @@ async function storeUploadInfoToDB(data, uploadDestinations) {
 
 /**
  * Selects a random image from a Guild's image pool.
- * @param {string} discordGuildId Discord Guild Id
- * @returns randomImage
+ * @param {string} discordGuildId - The Discord Guild Id where image will come from.
+ * @returns {object} randomImage - Random image object.
  */
 
 async function shufflepik(discordGuildId) {

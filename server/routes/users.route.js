@@ -103,7 +103,7 @@ async function exchangeUserInformationAgain(req, res) {
     console.log("We will send back query AGAIN");
     console.log(query);
     //await
-    res.redirect(302, `http://localhost:4200/home/?${query}`);
+    res.redirect(302, `http://localhost:8080/home/?${query}`);
   } catch (err) {
     console.log(err);
     throw err;
