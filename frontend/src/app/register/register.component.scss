@@ -1,0 +1,271 @@
+$sp-purple: #4e54c8;
+$light-purple: #5f66f2;
+$highlight-purple: #3601d6;
+
+.grid {
+  height: unset;
+  width: unset;
+}
+.dialog-header {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  h1 {
+    margin: 0;
+  }
+}
+
+.register-dialog {
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: 80vw;
+  height: 75vh;
+  max-width: 80vw;
+  max-height: 75vh;
+    //Since this entire area is a form, caret appears where elements are outside of the actual elements.
+  caret-color: transparent;
+  //place-items: center center;
+}
+
+input,
+button,
+select {
+  margin: 17.5px 0;
+  border-style: solid;
+  border-color: $light-purple;
+  //padding: 2.5px 15px;
+  padding: 2.5px 10px;
+  //padding: 0px 7.5px 0px 7.5px;
+  border-radius: 30px;
+  //border-radius: 25px;
+  //max-height: 40px;
+  //min-height: 47.5px;
+  //max-height: 47.5px;
+  height: 47.5px;
+}
+
+input {
+  //This is the height minus padding and border which takes up space in input
+  height: calc(47.5px - 9px);
+}
+
+select {
+  background-color: unset;
+  //margin: 10px 5px;
+}
+input:focus,
+select:focus {
+  border-color: $highlight-purple;
+  caret-color: $highlight-purple;
+  border-radius: 30px;
+  outline: none;
+}
+
+input,
+button {
+  text-align: center;
+  border-color: $light-purple;
+}
+
+span {
+  h3 {
+    color: rgb(134, 127, 127);
+  }
+}
+
+hr {
+  border-color: $sp-purple;
+  border-style: solid;
+}
+
+.register-email,
+.register-password,
+.register-dob,
+.register-gender,
+.register-terms,
+.register-button,
+.register-dob-title,
+.register-gender-title,
+.email-error-message,
+.password-error-message {
+  grid-column: 1/8;
+}
+
+.register-dob-title span,
+.register-gender-title span,
+.register-button,
+.close-icon,
+select {
+  cursor: pointer;
+}
+
+select {
+  border-width: 2px;
+}
+
+.register-email,
+.email-error-message {
+  grid-row: 1/2;
+}
+
+.register-password,
+.password-error-message {
+  grid-row: 2/3;
+}
+
+.email-error-message,
+.password-error-message {
+  align-self: end;
+}
+
+.register-dob-title {
+  // font-size: 12px;
+  grid-row: 3/4;
+  //align-self: start;
+  font-weight: bold;
+  color: #606770;
+  margin: 0 0 4px;
+  justify-self: center;
+  span {
+    font-size: 14px;
+    color: #606770;
+  }
+}
+
+/*.register-dob {
+  grid-row: 4/5;
+  align-self: end;
+}*/
+.register-dob-month,
+.register-dob-day,
+.register-dob-year {
+  grid-row: 4/5;
+  min-width: 75px;
+  // width: fit-content;
+  //align-self: end;
+}
+
+.register-dob-month {
+  grid-column: 3/4;
+}
+.register-dob-day {
+  grid-column: 4/5;
+}
+
+.register-dob-year {
+  grid-column: 5/6;
+}
+.register-gender-title {
+  // font-size: 12px;
+  font-weight: bold;
+  color: #606770;
+  justify-self: center;
+  //align-self: start;
+  grid-row: 5/6;
+  margin: 0 0 4px;
+  span {
+    font-size: 14px;
+    color: #606770;
+  }
+}
+.register-gender {
+  grid-row: 6/7;
+  grid-column: 3/6 !important;
+  min-width: 75px;
+
+  //align-self: end;
+}
+
+.register-terms {
+  font-size: 10px;
+  grid-row: 7/8;
+  justify-self: center;
+}
+.register-button {
+  background-color: $sp-purple;
+  color: #fff;
+  grid-row: 8/9;
+  text-align: center;
+  &:focus {
+    outline: none;
+  }
+}
+
+.mat-dialog-container {
+  padding: 18px !important;
+}
+
+mat-dialog-content {
+  max-height: 75vh;
+  //overflow: hidden;
+  margin: 0 0;
+}
+
+.link {
+  color: #3030f1 !important;
+  font-family: Arial !important;
+  word-break: break-word !important;
+  font-size: 10px;
+  //text-decoration: underline;
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Small devices (landscape phones, 576px and up)
+@media (min-width: 576px) {
+  input,
+  button,
+  select {
+    padding: 2.5px 15px;
+  }
+}
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 768px) {
+}
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 992px) {
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) {
+  input,
+  button {
+    text-align: unset;
+  }
+
+  .register-dialog {
+    //max-width: 40vw;
+    //max-height: calc(50vh - 24px);
+  }
+
+  input,
+  button,
+  select {
+    //margin: 4px 0;
+    max-height: 47.5px;
+    //margin: 12.75px 0;
+    //padding: 10px 15px 10px 15px;
+    max-width: none;
+  }
+
+  .register-email,
+  .register-password,
+  .register-dob,
+  .register-gender,
+  .register-terms,
+  .register-button,
+  .register-dob-title,
+  .register-gender-title {
+    grid-column: 2/7;
+  }
+  mat-dialog-content {
+  }
+}
+
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1400px) {
+}

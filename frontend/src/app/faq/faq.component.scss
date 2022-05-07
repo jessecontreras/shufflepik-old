@@ -1,0 +1,232 @@
+$dark-purp: #5555aa;
+$light-purp: #6666cc;
+$highlight-purple: #3601d6;
+
+.grid {
+  height: unset;
+  width: unset;
+}
+.dialog-header {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  h1 {
+    margin: 0;
+  }
+}
+//This is housed inside of mat-dialog-content
+.faq-dialog {
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: 80vw;
+  height: 75vh;
+  max-width: 80vw;
+  max-height: 75vh;
+  //Since this entire area is a form, caret appears where elements are outside of the actual elements.
+  caret-color: transparent;
+  //place-items: center center;
+}
+.heading {
+  grid-area: 1/1/2/12;
+  align-self: end;
+}
+.subheading {
+  grid-area: 2/1/3/12;
+  align-self: center;
+  text-align: center;
+}
+
+.heading,
+.subheading,
+.password-match-prompt {
+  color: #ffffff;
+  justify-self: center;
+}
+
+.faq-dialog {
+  mat-expansion-panel-header,
+  p,
+  li {
+    font-size: 13px !important;
+  }
+}
+
+.heads-up-text {
+  color: rgb(235, 94, 13);
+}
+
+.password-match-prompt {
+  -webkit-text-stroke: 0.5px rgb(210, 18, 18);
+  //color: #f8bbd0;
+}
+
+.reset-password-card {
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  grid-area: 3/2/9/11;
+  padding: 0 20px;
+  text-align: center;
+  background-color: $light-purp;
+}
+
+.password-match-prompt {
+  grid-row: 2/3;
+}
+
+.password {
+  grid-row: 3/5;
+}
+//TODO:Change the grid row for confirm-password-error
+.password-error,
+.confirm-password-error {
+  grid-row: 4/5;
+  color: #f8bbd0;
+  font-weight: bolder;
+  align-self: end;
+  padding-left: 10px;
+}
+.confirm-password {
+  grid-row: 5/7;
+}
+.confirm-password-error {
+  grid-row: 6/7;
+}
+
+.password-match-prompt,
+.password,
+.confirm-password,
+.password-error,
+.confirm-password-error,
+.password-change-button {
+  grid-column: 1/6;
+}
+
+.reset-password-card,
+button,
+select,
+input {
+  //border-radius: 30px;
+  border-radius: 40px;
+}
+input,
+button,
+select {
+  margin: 7.5px 0;
+  border-style: solid;
+  border-color: $light-purp;
+  padding: 0px 7.5px 0px 7.5px;
+  height: 47.5px;
+}
+select {
+  margin: 10px 5px;
+}
+input:focus,
+select:focus {
+  border-color: $highlight-purple;
+  caret-color: $highlight-purple;
+  //border-radius: 30px;
+  border-radius: 40px;
+  outline: none;
+}
+
+input,
+button {
+  text-align: center;
+  border-color: $light-purp;
+}
+
+span {
+  h3,
+  h4 {
+    color: rgb(134, 127, 127);
+  }
+}
+
+hr {
+  border-color: $dark-purp;
+  border-style: solid;
+}
+
+.password-change-input {
+  grid-row: 3/4;
+}
+
+.password-change-button {
+  text-align: center;
+  grid-row: 8/10;
+  color: $light-purp;
+  background-color: #ffffff;
+}
+
+.password-change-input,
+.password-change-button {
+  grid-column: 1/8;
+}
+
+.password-change-button {
+  cursor: pointer;
+}
+
+select {
+  border-width: 2px;
+}
+
+.register-email,
+.email-error-message {
+  grid-row: 1/2;
+}
+
+.register-password,
+.password-error-message {
+  grid-row: 2/3;
+}
+
+.email-error-message,
+.password-error-message {
+  align-self: end;
+}
+
+// Small devices (landscape phones, 576px and up)
+@media (min-width: 576px) {
+}
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 768px) {
+  .faq-dialog {
+    mat-expansion-panel-header,
+    p,
+    li {
+      font-size: 15px !important;
+    }
+  }
+}
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 992px) {
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) {
+  input,
+  button {
+    text-align: unset;
+  }
+
+  input,
+  button,
+  select {
+    max-width: none;
+  }
+  .password-match-prompt,
+  .password,
+  .confirm-password,
+  .password-error,
+  .confirm-password-error,
+  .password-change-button {
+    grid-column: 2/5;
+  }
+}
+
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1400px) {
+}

@@ -1,0 +1,42 @@
+{
+  "name": "shufflepik",
+  "version": "1.0.0",
+  "description": "Server for Shuffkepik, all rights reserved.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jesdogg/shufflepik-alpha.git"
+  },
+  "dependencies": {
+    "@discordjs/builders": "^0.11.0",
+    "@discordjs/rest": "^0.2.0-canary.0",
+    "axios": "^0.25.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "dayjs": "^1.10.7",
+    "discord-api-types": "^0.26.1",
+    "discord.js": "^13.5.1",
+    "dotenv": "^8.6.0",
+    "express": "^4.17.1",
+    "express-jwt": "^6.1.0",
+    "fs-extra": "^10.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "mongodb": "^4.5.0",
+    "multer": "^1.4.2",
+    "ngrok": "^4.2.2",
+    "node-fetch": "^2.6.1",
+    "node-persist": "^3.1.0",
+    "nodemailer": "^6.7.0",
+    "nodemon": "^2.0.12",
+    "request": "^2.87.0",
+    "rootpath": "^0.1.2",
+    "shar": "^0.2.0",
+    "sharp": "^0.30.3",
+    "tweetnacl": "^1.0.3"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.11"
+  }
+}

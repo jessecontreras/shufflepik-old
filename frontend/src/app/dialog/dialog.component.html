@@ -1,0 +1,21 @@
+<div class="dialog">
+  <div class="dialog-header">
+    <h3 *ngIf="dialogData.title" mat-dialog-title>
+      {{ dialogData?.title }} -
+      {{ dialogData.date_posted | parseDate | formatDate }}
+    </h3>
+    <mat-icon
+      mat-icon-button
+      [mat-dialog-close]="false"
+      class="material-icons-outlined md-24 close-icon"
+      >close</mat-icon
+    >
+  </div>
+  <div class="dialog-body" mat-dialog-content>
+    <img
+      class="dialog-image"
+      [src]="dialogData.image_url"
+      [alt]="dialogData.title"
+    />
+  </div>
+</div>

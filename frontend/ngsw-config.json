@@ -1,0 +1,70 @@
+{
+  "$schema": "./node_modules/@angular/service-worker/config/schema.json",
+  "index": "/index.html",
+  "dataGroups": [
+    {
+      "name": "no-cache",
+      "urls": [
+        "/apis/users/authenticate",
+        "/apis/users/register",
+        "/apis/users/ve",
+        "/apis/users/integrate",
+        "/apis/discord/xchange-info",
+        "/apis/discord/xchange-info-again",
+        "/apis/users/*images*/**",
+        "/apis/users/*password*/**",
+        "/apis/users/*email*/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 0,
+        "maxAge": "0u",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "state-while-revalidate",
+      "urls": ["/apis/users/*guilds*/**", "/apis/users/*albums*/**"],
+      "cacheConfig": {
+        "maxSize": 25,
+        "maxAge": "60s",
+        "timeout": "50u",
+        "strategy": "freshness"
+      }
+    }
+  ],
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "resources": {
+        "files": [
+          "/favicon.ico",
+          "/index.html",
+          "/manifest.webmanifest",
+          "/*.css",
+          "/*.js"
+        ]
+      }
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": [
+          "/assets/**",
+          "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+        ]
+      }
+    },
+    {
+      "name": "fonts",
+      "resources": {
+        "urls": [
+          "https://fonts.googleapis.com/**",
+          "https://fonts.gstatic.com/**"
+        ]
+      }
+    }
+  ]
+}

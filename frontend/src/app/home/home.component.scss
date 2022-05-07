@@ -1,0 +1,475 @@
+$sp-purple: #4e54c8;
+$light-purp: #5f66f2;
+$highlight-purple: #3601d6;
+
+.home,
+.upload-card {
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+}
+
+.home {
+  //min-height: calc(100vh - 50px);
+  //height: 100%;
+  height: 100vh;
+}
+
+.upload-card-container {
+}
+
+.upload-card__title,
+.upload-card__image-select,
+.upload-card__group-include,
+.upload-card__image-title,
+.upload-card__image-submit,
+.upload-card__image-select--selected,
+.welcome-message,
+.discord-user-guilds__title,
+.guild-item,
+.navigate-before,
+.navigate-next,
+.confirm-email-prompt,
+.bot-not-installed-prompt {
+  color: $sp-purple !important;
+}
+
+.upload-card__image-submit button,
+.mat-snack-bar-container,
+.connect-discord-button,
+.guild-item--selected {
+  background-color: $sp-purple !important;
+}
+
+.mat-snack-bar-container,
+.mat-simple-snackbar span,
+.connect-discord-button,
+.mat-flat-button,
+.guild-item--selected {
+  color: #fff !important;
+}
+
+.upload-card__title,
+.upload-card__image-select,
+.upload-card__group-include,
+.upload-card__image-title,
+.upload-card__image-submit,
+.upload-card__image-select--selected,
+.confirm-email-prompt,
+.bot-not-installed-prompt {
+  grid-column: 1/12;
+  text-align: center;
+}
+
+.image,
+.cancel-icon:hover,
+.upload-card__upload-icon,
+.upload-card__upload-icon label,
+.cancel-upload-icon,
+.connect-discord-button,
+.guild-item,
+.guild-item--selected,
+.navigate-before,
+.navigate-next,
+.upload-card__image-select--selected {
+  cursor: pointer;
+}
+
+.upload-card__image-select--selected,
+.upload-card__image-select--selected figure,
+.upload-card__image-select--selected .image-preview {
+  height: 100%;
+  width: 100%;
+  //height: 100%;
+  //width: 90vw;
+}
+
+.navigate-before,
+.navigate-next {
+  z-index: 10;
+  align-self: center;
+  grid-row: 6/8;
+}
+.navigate-next {
+  //grid-row: 6/8;
+  grid-column: 10/12;
+  //place-self: center;
+  justify-self: center;
+  // z-index: 10;
+}
+
+.navigate-before {
+  //grid-row: 6/8;
+  grid-column: 1/3;
+  justify-self: flex-start;
+  // place-self: center;
+  //z-index: 10;
+}
+.confirm-email-prompt {
+  grid-row: 2/3;
+}
+.bot-not-installed-prompt {
+  grid-row: 8/10;
+  grid-column: 1/12;
+}
+.upload-card {
+  grid-row: 3/8;
+  grid-column: 1/12;
+
+  //height: 85vh;
+  //width: 75vw;
+  height: 100%;
+  width: 92.4vw;
+
+  justify-self: center;
+  .mat-form-field {
+    margin: 0 0;
+  }
+  &__title {
+    //grid-row: 1/3;
+    grid-row: 1/2;
+  }
+
+  &__image-select {
+    opacity: 1 !important;
+    grid-row: 3/6;
+    grid-column: 1/12;
+    border: none;
+    min-height: 200px;
+
+    color: rgba(78, 84, 200, 1) !important;
+    &--selected {
+      //grid-row: 3/6;
+      grid-row: 2/6;
+      figure {
+        margin: 0;
+        overflow: hidden;
+      }
+      .image-preview {
+        background-position: center !important;
+        background-size: cover !important;
+        background-repeat: no-repeat !important;
+        border-radius: 15px;
+      }
+    }
+    &--error {
+      color: #f44336 !important;
+      background-color: #ffffff !important;
+    }
+  }
+  &__image-upload {
+    display: none;
+  }
+  &__group-include {
+    grid-row: 6/8;
+  }
+  &__image-title {
+    grid-row: 7/8;
+  }
+  &__image-submit {
+    grid-row: 8/9;
+    button {
+      color: #ffffff;
+    }
+  }
+}
+
+.upload-icon {
+  opacity: 1;
+  .mat-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+.cancel-upload-icon {
+  // grid-area: 2/11/3/12;
+  grid-area: 2/10/3/11;
+  height: 24px;
+  width: 24px;
+  place-self: center;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 5px;
+}
+
+.mat-form-container {
+}
+
+.mat-form-field {
+  margin: 40px 0;
+  width: 100%;
+}
+
+.mat-toolbar-single-row {
+  height: auto !important;
+  background: transparent;
+}
+
+.mat-toolbar-single-row button {
+  width: 200px;
+}
+
+.mat-form-field {
+  width: 100%;
+}
+
+.mat-flat-button {
+  &--selected {
+    background-color: rgba(15, 177, 0, 0.767);
+  }
+}
+
+.image {
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  z-index: 9;
+  opacity: 0;
+  height: 100%;
+  cursor: pointer;
+  position: absolute;
+  &--selected {
+    width: 75%;
+  }
+}
+
+.flexbox {
+  justify-content: center;
+  align-items: center;
+}
+
+.cancel-icon {
+  color: rgb(138, 130, 130);
+}
+
+mat-progress-bar {
+  border-radius: 5px;
+}
+
+.welcome-message {
+  grid-row: 3/6;
+  grid-column: 2/11;
+  //Since the entire login-card is a form, caret appears where elements are outside of the actual elements.
+  caret-color: transparent;
+
+  h2,
+  h3 {
+    text-align: center;
+  }
+}
+
+.connect-discord-button {
+  grid-row: 7/8;
+  grid-column: 3/10;
+  font-size: 1rem;
+  border-radius: 100px;
+  border: none;
+}
+
+.discord-user-guilds {
+  grid-row: 7/10;
+  grid-column: 1/12;
+  //overflow-y: auto;
+  padding: 0px 0 40px 0;
+  &__title {
+    text-align: center;
+  }
+}
+
+.guild-list {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.guild-item {
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  border-color: $sp-purple;
+  padding: 5px;
+  margin: 5px;
+  height: 25px;
+  min-width: 100px;
+  display: inherit;
+  &--selected {
+    border-radius: 10px;
+    padding: 5px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: $sp-purple;
+    margin: 5px;
+    height: 25px;
+    min-width: 100px;
+    display: inherit;
+  }
+  &__icon {
+    display: inline-block;
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    height: 25px;
+    width: 25px;
+    border-radius: 4px;
+    margin: 0 5px;
+  }
+  &__name {
+    text-align: right;
+    padding-top: 2px;
+  }
+}
+/*Re-style dialog header since it won't have a title*/
+.dialog-header {
+  display: flex;
+  justify-content: flex-end !important;
+  align-items: center;
+}
+
+// X-Small devices (portrait phones, less than 576px)
+// No media query for `xs` since this is the default in Bootstrap
+
+// Small devices (landscape phones, 576px and up)
+@media (min-width: 576px) {
+  /* .upload-card {
+    //grid-row: 2/8;
+  }*/
+}
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 768px) {
+  .connect-discord-button {
+    font-size: 1.75rem;
+  }
+  .welcome-message {
+    h2 {
+      font-size: 36px;
+    }
+    h3 {
+      font-size: 24px;
+    }
+  }
+}
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 992px) {
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) {
+  .home {
+    //height: 100%;
+  }
+
+  .connect-discord-button {
+    grid-column: 4/9;
+  }
+  .upload-card,
+  .upload-card__title,
+  .upload-card__image-select,
+  .upload-card__group-include,
+  .upload-card__image-title,
+  .upload-card__image-submit,
+  .upload-card__image-select--selected,
+  .confirm-email-prompt {
+    grid-column: 3/10;
+  }
+
+  .cancel-upload-icon {
+    opacity: 0;
+  }
+
+  .navigate-next {
+    place-self: center;
+  }
+
+  .navigate-before {
+    place-self: center;
+  }
+
+  .upload-card {
+    // grid-row: 2/8;
+    grid-row: 3/8;
+    min-height: 365px;
+    height: 65vh;
+    width: 65vw;
+
+    justify-self: center;
+    &:hover {
+      mat-icon {
+        opacity: 1;
+      }
+    }
+    &__title {
+      grid-row: 1/2;
+    }
+    &__image-select {
+      grid-row: 2/7;
+      border-radius: 15px;
+      border-style: dashed;
+      border-width: 2px;
+      min-height: 250px;
+      margin: 0 100px;
+      &:hover {
+        color: rgba(78, 84, 200, 1) !important;
+      }
+
+      &--selected {
+        grid-row: 2/7;
+        border-radius: 15px;
+        min-height: 250px;
+        &:hover ~ mat-icon {
+          opacity: 1 !important;
+        }
+      }
+    }
+
+    &__image-instructions {
+      color: rgba(78, 84, 200, 1);
+      margin-top: 25px;
+      font-weight: bold;
+      small {
+        font-weight: lighter !important;
+      }
+    }
+    &__upload-icon {
+      margin-top: 40px;
+      opacity: 0.5;
+      &:hover {
+        opacity: 1 !important;
+      }
+    }
+    &__image-upload {
+    }
+    &__group-include {
+      grid-row: 7/8;
+    }
+    &__image-title {
+      grid-row: 8/9;
+    }
+    &__image-submit {
+      grid-row: 9/10;
+    }
+  }
+
+  .welcome-message {
+    grid-column: 3/10;
+    /*h2 {
+      font-size: 36px;
+    }
+    h3 {
+      font-size: 24px;
+    }*/
+  }
+
+  .cancel-upload-icon {
+    grid-area: 2/9/3/10;
+  }
+
+  .discord-user-guilds {
+    grid-column: 2/11;
+    grid-row: 8/10;
+  }
+}
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1400px) {
+}

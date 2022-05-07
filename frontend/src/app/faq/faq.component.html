@@ -1,0 +1,104 @@
+<div class="dialog-header">
+  <h1 mat-dialog-title>
+    FAQ<br /><span><h3>Most asked questions found below.</h3></span>
+  </h1>
+  <mat-icon
+    mat-icon-button
+    [mat-dialog-close]="false"
+    class="material-icons-outlined md-24 close-icon"
+    >close</mat-icon
+  >
+</div>
+<hr />
+<mat-dialog-content>
+  <div class="faq-dialog">
+    <mat-accordion>
+      <mat-expansion-panel hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title> What is Shufflepik? </mat-panel-title>
+          <mat-panel-description>
+            Shufflepik is a website and a Discord bot.
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          Upload images or memes on the Shufflepik site and share a randomized
+          image with the Shufflepik bot using the /shufflepik command on
+          Discord.
+        </p>
+      </mat-expansion-panel>
+      <mat-expansion-panel hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title> How to upload images? </mat-panel-title>
+          <mat-panel-description>
+            Must have a Shufflepik account.
+          </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          After creating a shufflepik account you follow 3 easy steps (in no
+          particular order):
+        </p>
+        <ol>
+          <li>
+            If none of the server's you're a member of has the Shufflepik bot,
+            invite Shufflepik Bot to one of your servers
+          </li>
+          <li>Connect Shufflepik to your Discord account</li>
+          <li>Verify Email (sent to email used to create acct.)</li>
+        </ol>
+        <p>
+          After this follow the upload image prompt and you'll be able to upload
+          images.
+        </p>
+      </mat-expansion-panel>
+      <mat-expansion-panel hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            What do you mean "randomized" image?</mat-panel-title
+          >
+          <mat-panel-description> A random image </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          When you upload an image you will be prompted to upload to a
+          corresponding "server pool". Any user from that server can upload
+          images to the shared server pool on Shufflepik. The Shufflepik bot
+          selects an image at random when a user uses the /shufflepik command.
+          It's sort of a routlette of images.
+        </p>
+      </mat-expansion-panel>
+      <mat-expansion-panel hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Does a Discord server share a Shufflepik account?</mat-panel-title
+          >
+          <mat-panel-description> No </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          You will only be able to see images you upload on your Shufflepik
+          account. You will only be able to see another user's images when they
+          are displayed through /shufflepik command on Discord.
+        </p>
+      </mat-expansion-panel>
+      <mat-expansion-panel hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title> Compatible image extensions?</mat-panel-title>
+          <mat-panel-description> WIP </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          Work in progress. We are only able to process .png, .jpg, .jpeg
+          formats. We're working on gif compatibility, should be out soon.
+        </p>
+      </mat-expansion-panel>
+      <mat-expansion-panel hideToggle>
+        <mat-expansion-panel-header>
+          <mat-panel-title> I have more questions</mat-panel-title>
+          <mat-panel-description> ? </mat-panel-description>
+        </mat-expansion-panel-header>
+        <p>
+          Reach out to info@shufflepik.com for more information on Shufflepik. If
+          you have any issues with your account reach out to
+          support@shufflepik.com
+        </p>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </div>
+</mat-dialog-content>

@@ -1,0 +1,117 @@
+<div class="dialog-header">
+  <h1 mat-dialog-title>
+    Sign up<br /><span><h3>Share pictures and memes!</h3></span>
+  </h1>
+  <mat-icon
+    mat-icon-button
+    [mat-dialog-close]="false"
+    class="material-icons-outlined md-24 close-icon"
+    >close</mat-icon
+  >
+</div>
+<hr />
+<mat-dialog-content>
+  <form
+    [formGroup]="registerForm"
+    (ngSubmit)="register()"
+    #f="ngForm"
+    novalidate
+    name="registerForm"
+    class="grid register-dialog"
+  >
+    <input
+      type="email"
+      formControlName="registerEmail"
+      class="register-email"
+      placeholder="{{ emailPlaceholderText }}"
+      [ngClass]="{
+        'is-invalid': submitted && registerForm.controls['registerEmail'].errors
+      }"
+    />
+    <!--<small
+      *ngIf="submitted && registerForm.controls.registerEmail.errors"
+      class="email-error-message is-invalid"
+      >Please enter a valid Email</small
+    >-->
+    <input
+      type="password"
+      formControlName="registerPassword"
+      class="register-password"
+      placeholder="{{ pwPlaceholder }}"
+      [ngClass]="{
+        'is-invalid':
+          submitted && registerForm.controls['registerPassword'].errors
+      }"
+    />
+    <!--<small
+      *ngIf="submitted && registerForm.controls.registerPassword.errors"
+      class="password-error-message is-invalid"
+      >Password must be at leat 5 characters long</small
+    >-->
+    <h2 class="register-dob-title">
+      Birthday<span
+        [matTooltipPosition]="position.value"
+        matTooltip="You must be at least 13 years old to sign up. Read terms of service for more info."
+        aria-label="Button that displays a tooltip when focused or hovered over"
+        class="material-icons-outlined"
+      >
+        <mat-icon>help_outline</mat-icon>
+      </span>
+    </h2>
+    <select
+      formControlName="dobMonth"
+      class="register-dob-month"
+      [ngClass]="{
+        'is-invalid': submitted && registerForm.controls['dobMonth'].errors
+      }"
+    >
+      <option *ngFor="let month of dobMonths" [value]="month">
+        {{ month }}
+      </option>
+    </select>
+    <select
+      formControlName="dobDay"
+      [ngClass]="{
+        'is-invalid': submitted && registerForm.controls['dobDay'].errors
+      }"
+      class="register-dob-day"
+    >
+      <option *ngFor="let day of dobDays" [value]="day">{{ day }}</option>
+    </select>
+    <select
+      formControlName="dobYear"
+      [ngClass]="{
+        'is-invalid': submitted && registerForm.controls['dobYear'].errors
+      }"
+      class="register-dob-year"
+    >
+      <option *ngFor="let year of dobYears" [value]="year">{{ year }}</option>
+    </select>
+    <h2 class="register-gender-title">
+      Gender (Pronouns)<span
+        [matTooltipPosition]="position.value"
+        matTooltip="Your gender (pronoun)"
+        aria-label="Button that displays a tooltip when focused or hovered over"
+      >
+        <mat-icon class="material-icons-outlined">help_outline</mat-icon>
+      </span>
+    </h2>
+    <select
+      formControlName="gender"
+      [ngClass]="{
+        'is-invalid': submitted && registerForm.controls['gender'].errors
+      }"
+      class="register-gender"
+    >
+      <option *ngFor="let gender of genders" [value]="gender">
+        {{ gender }}
+      </option>
+    </select>
+    <p class="register-terms">
+      By clicking Sign Up, you agree to our
+      <a (click)="openLink('/terms')" class="link">Terms</a>. Please read and be
+      mindful of the images you upload.
+    </p>
+    <button matRipple class="register-button">Sign Up</button>
+  </form>
+</mat-dialog-content>

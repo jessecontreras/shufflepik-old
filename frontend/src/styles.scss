@@ -1,0 +1,273 @@
+// Custom Theming for Angular Material
+@use "@angular/material" as mat;
+// For more information: https://material.angular.io/guide/theming
+// Plus imports for other components in your app.
+
+// Include the common styles for Angular Material. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+// Be sure that you only ever include this mixin once!
+@include mat.core();
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://material.io/design/color/
+$shufflepik-primary: mat.define-palette(mat.$indigo-palette);
+$shufflepik-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+
+// The warn palette is optional (defaults to red).
+$shufflepik-warn: mat.define-palette(mat.$red-palette);
+
+// Create the theme object. A theme consists of configurations for individual
+// theming systems such as "color" or "typography".
+$shufflepik-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $shufflepik-primary,
+      accent: $shufflepik-accent,
+      warn: $shufflepik-warn,
+    ),
+  )
+);
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include mat.all-component-themes($shufflepik-theme);
+
+$error-red: rgb(210, 18, 18);
+$dark-purp: #5555aa;
+$light-purp: #6666cc;
+$highlight-purple: #3601d6;
+
+/* You can add global styles to this file, and also import other style files */
+
+body {
+  margin: 0;
+}
+
+/*Following are the defaults for proceeding global styles */
+.grid {
+  display: grid;
+  // height: 100vh;
+  //width: 100vw;
+}
+
+.flex {
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+html,
+body {
+  height: 100%;
+  // overflow: hidden;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+//To avoid mobile web broswers from zooming into input controls
+input,
+input::-webkit-input-placeholder {
+  font-size: 16px !important;
+}
+
+.sp-dialog {
+  width: 95vw;
+  height: 75vh;
+}
+.albums-wrapper {
+  img {
+    /*height: unset !important;
+    width: unset !important;*/
+    object-fit: cover !important;
+  }
+}
+
+.grid--album {
+  img {
+    /*height: unset !important;
+    width: unset !important;*/
+    object-fit: cover !important;
+  }
+}
+
+.mat-expansion-panel {
+  padding: 10px 5px;
+}
+
+/* Rules for sizing the icon. */
+.material-icons.md-18 {
+  font-size: 18px;
+}
+.material-icons.md-24 {
+  font-size: 24px;
+}
+.material-icons.md-36 {
+  font-size: 36px;
+}
+.material-icons.md-48 {
+  font-size: 48px;
+}
+
+/* Rules for using icons as black on a light background. */
+.material-icons.md-dark {
+  color: rgba(0, 0, 0, 0.54);
+}
+.material-icons.md-dark.md-inactive {
+  color: rgba(0, 0, 0, 0.26);
+}
+
+/* Rules for using icons as white on a dark background. */
+.material-icons.md-light {
+  color: rgba(255, 255, 255, 1);
+}
+.material-icons.md-light.md-inactive {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Rules for sizing the icon. */
+.material-icons-outlined.md-18 {
+  font-size: 18px;
+}
+.material-icons-outlined.md-24 {
+  font-size: 24px;
+}
+.material-icons-outlined.md-36 {
+  font-size: 36px;
+}
+.material-icons-outlined.md-48 {
+  font-size: 48px;
+}
+
+/* Rules for using icons as black on a light background. */
+.material-icons-outlined.md-dark {
+  color: rgba(0, 0, 0, 0.54);
+}
+.material-icons-outlined.md-dark.md-inactive {
+  color: rgba(0, 0, 0, 0.26);
+}
+
+/* Rules for using icons as white on a dark background. */
+.material-icons-outlined.md-light {
+  color: rgba(255, 255, 255, 1);
+}
+.material-icons-outlined.md-light.md-inactive {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/*Rules for snackbar mat elements */
+.mat-snack-bar-container {
+  background-color: #4e54c8;
+  position: relative;
+  top: 60px; //offset header and header padding
+}
+
+.mat-simple-snackbar span {
+  color: white;
+}
+
+.mat-simple-snackbar .mat-button-wrapper {
+  color: #4ec8c2;
+}
+
+.cdk-overlay-pane {
+  max-width: 92.5vw !important;
+  // max-height: 70vh !important;
+  //  height: 100% !important;
+  // width: 100% !important;
+}
+
+.mat-dialog-content {
+  padding: 0 12px !important;
+}
+
+.mat-dialog-container {
+  padding: 18px !important;
+}
+
+.avatar-nav-card__avatar {
+  .material-icons-outlined.md-48 {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+snack-bar-container,
+.mat-snack-bar-container {
+  //50px is offset for header, 24px is default, auto is to center snackbar container
+  //margin: 74px auto 24px auto !important;
+  //max-height: 48px !important;
+  //max-width: 33vw !important;
+  //min-width: 344px !important;
+}
+
+/*Style for when an input has an error*/
+.is-invalid {
+  border-color: $error-red !important;
+  color: $error-red !important;
+  &::placeholder {
+    /* Chrome, Firefox, Opera, Safari 10.1+ */
+    color: $error-red !important;
+    opacity: 1; /* Firefox */
+  }
+
+  &:-ms-input-placeholder {
+    /* Internet Explorer 10-11 */
+    color: $error-red !important;
+  }
+
+  &::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: $error-red !important;
+  }
+}
+
+// Small devices (landscape phones, 576px and up)
+@media (min-width: 576px) {
+  /*.cdk-overlay-pane {
+    max-width: unset;
+  }*/
+}
+
+// Medium devices (tablets, 768px and up)
+@media (min-width: 768px) {
+  .cdk-overlay-pane {
+    //max-width: 80vw !important;
+    // max-height: 82.5vh !important;
+    // height: 100% !important;
+    // width: 100% !important;
+  }
+}
+
+// Large devices (desktops, 992px and up)
+@media (min-width: 992px) {
+  .sp-dialog {
+    width: 80vw;
+    height: 80vh;
+  }
+}
+
+// X-Large devices (large desktops, 1200px and up)
+@media (min-width: 1200px) {
+  .mat-dialog-content {
+    padding: 0 24px !important;
+  }
+  .mat-dialog-container {
+    padding: 24px !important;
+  }
+}
+
+// XX-Large devices (larger desktops, 1400px and up)
+@media (min-width: 1400px) {
+}
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
