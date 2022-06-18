@@ -106,16 +106,12 @@ export class LoginComponent implements OnInit {
         this.f['password'].value
       );
 
-      //if (user?._id ) {
+
       if (response?._id) {
         // get return url from query parameters or default to home page
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
         this.router.navigateByUrl(returnUrl);
       } else {
-        /*this.snackbar.open(response, 'OK', {
-          duration: 7500,
-          verticalPosition: this.verticalPosition,
-        });*/
         this._snackbar.openSnackBar(response, 'OK', 'dangerous', 5);
       }
     } catch (err) {

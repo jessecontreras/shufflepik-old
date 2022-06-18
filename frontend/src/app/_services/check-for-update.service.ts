@@ -51,7 +51,6 @@ export class CheckForUpdateService {
       );
       this._snackbar.onAction.subscribe((event: any) => {
         if (event.dismissedByAction) {
-          console.log('updating shufflepik');
           document.location.reload();
         }
       });

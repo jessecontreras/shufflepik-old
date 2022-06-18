@@ -29,6 +29,7 @@ const maxFileSize = 10000000; //10 MBs
 
 //Import db controller for all db functions
 const db_controller = require("./db.controller");
+
 const { result } = require("lodash");
 
 //Create controller object
@@ -269,7 +270,7 @@ async function moveImageToGuildDir(payload) {
 /**
  * Moves a user's account images from live directory (directories) to "deleted" directory.
  * @param {Array} imageLocationReferences Array of image urls
- * @returns {Promise}
+ * @returns {Promise<void>}
  */
 async function deleteUserAccountImages(imageLocationReferences) {
   try {
@@ -288,7 +289,8 @@ async function deleteUserAccountImages(imageLocationReferences) {
       //Ensure directory exists
       await fse.ensureDir(deletedDirLoc);
       //move file from live directory to non-live directory
-      await fse.move(currentLoc, deletedFileLoc, { overwrite: true });
+      await fse.move(currentLoc, deletedFileLoc);
+      //await fse.move(currentLoc, deletedFileLoc, { overwrite: true });
     }
     return;
   } catch (err) {
@@ -305,12 +307,13 @@ async function deleteUserAccountImages(imageLocationReferences) {
  */
 async function storeUploadInfoToDB(data, uploadDestinations) {
   //Instantiate Mongo client
-  const client = await db_controller.instantiateMongoClient();
+  //const client = await db_controller.instantiateMongoClient();
   try {
     //Connect Mongo client
-    await client.connect();
+    const client = await db_controller.mongo().getConnection();
+
     //Sufflepik guilds collection
-    const collection = client
+    const collection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Guilds);
     //Look into making this a for loop for the same of async///----~~!!!!!!
@@ -334,6 +337,7 @@ async function storeUploadInfoToDB(data, uploadDestinations) {
               _id: new MongoDb.ObjectId(),
               date_uploaded: dayjs().format(),
               uploaded_by_discord_username: data.uploaded_by_discord_username,
+              uploaded_by_discord_id: data.uploaded_by_discord_id,
               uploaded_by_id: data.uploaded_by_id,
               image_title: data.image_title,
               image_url: filePath,
@@ -370,11 +374,14 @@ async function storeUploadInfoToDB(data, uploadDestinations) {
 async function shufflepik(discordGuildId) {
   try {
     //Instantiate Mongo client
-    const client = await db_controller.instantiateMongoClient();
+    //const client = await db_controller.instantiateMongoClient();
     //Connect Mongo client
-    await client.connect();
+    //await client.connect();
+    //const client = await db_controller.clientPromise();
+    const client = await db_controller.mongo().getConnection();
+
     //Sufflepik guilds collection
-    const guildsCollection = client
+    const guildsCollection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Guilds);
     let shufflepikQuery = await guildsCollection.aggregate([

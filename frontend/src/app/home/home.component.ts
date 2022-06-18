@@ -134,6 +134,7 @@ export class HomeComponent {
   async userSubcsription() {
     try {
       this.accountService.userData$.subscribe((user) => {
+
         if (user) {
           this.currentUser = user;
           if (user.discord?.connected) {
@@ -219,10 +220,6 @@ export class HomeComponent {
         if (this.simulatedProgressValue <= 100) {
           this.simulatedProgressValue += 5;
           if (this.simulatedProgressValue == 100) {
-            /* this.snackBar.open('Picture uploaded successfully ✅  🎉', 'OK', {
-              duration: this.timerValue,
-              verticalPosition: this.verticalPosition,
-            });*/
             this._snackBar.openSnackBar(
               'Picture uploaded successfully',
               'OK',
@@ -262,23 +259,11 @@ export class HomeComponent {
         this.upload = file;
         if (file.http_response) {
           if (file.http_response.errorResponse) {
-            /*this.snackBar
-              .open(file.http_response.errorResponse, 'OK', {
-                verticalPosition: this.verticalPosition,
-              })
-              .afterDismissed()
-              .subscribe(() => {
+            this._snackBar
+              .openSnackBar(file.http_response.errorResponse, 'OK', 'report', 7)
+              .then(() => {
                 this.resetUpload();
-              });*/
-            this._snackBar.openSnackBar(
-              file.http_response.errorResponse,
-              'OK',
-              'error',
-              5
-            );
-            this._snackBar.onAction.subscribe(() => {
-              this.resetUpload();
-            });
+              });
           }
         }
         if (this.upload.state != 'PENDING') {
@@ -323,10 +308,6 @@ export class HomeComponent {
                 'done',
                 5
               );
-              /*.afterDismissed()
-                .subscribe(() => {
-                  this.resetUpload();
-                });*/
               this._snackBar.onAction.subscribe((event) => {
                 this.resetUpload();
               });
@@ -358,17 +339,24 @@ export class HomeComponent {
 
   async appendFormData() {
     try {
+      console.log(
+        `Appending form data, discord username is:${this.currentUser.discord.username}`
+      );
       //Form data object will be used to send image to service
       let formData = new FormData();
       //Append data
       this.selectedGuilds.forEach((guild, index) => {
         formData.append(`guild_${index}`, `${guild}`);
       });
-      formData.append('uploaded_by_id', this.currentUser?._id),
-        formData.append(
-          `uploaded_by_discord_username`,
-          `${this.currentUser?.discord?.username}`
-        );
+      formData.append('uploaded_by_id', this.currentUser?._id);
+      formData.append(
+        `uploaded_by_discord_username`,
+        `${this.currentUser.discord.username}`
+      );
+      formData.append(
+        `uploaded_by_discord_id`,
+        `${this.currentUser.discord.id}`
+      );
       formData.append('image_title', this.uploadForm.get('imageTitle')!.value);
       formData.append('image', this.selectedFile, this.selectedFileName);
 

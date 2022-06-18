@@ -66,7 +66,7 @@ export class HeaderComponent implements OnInit {
     Album: 'album',
     ValEmailPage: '',
     ValEmailErr: 'validateEmailError',
-    ValEmailSuccess: 'validateEmailSuccess',
+    ValEmailSuccess: 'email-validation-successful',
     BotDownload: 'thanks-bot-download',
     Home: 'home',
     Login: 'login',
@@ -80,11 +80,11 @@ export class HeaderComponent implements OnInit {
   //System responses "enum"
   systemResponses = {
     ValidateEmailPrompt:
-      'Click on "Send email" if you would like an email sent to you to verify your email. You will not be able to upload pictures if email is not validated.',
+      'Click on "Send email" if you would like an email sent to verify your email.',
     ValidateEmailSuccess:
       'Thank you for validating your email! You are good to go 😎',
     ValidateEmailError:
-      'Something went wrong with validating your email. Request another link or contact us if you think this is an error.',
+      'Something went wrong with validating your email. Request another link or contact us if you believe this is an error.',
   };
 
   ngOnInit(): void {
@@ -179,7 +179,8 @@ export class HeaderComponent implements OnInit {
             this.previousUrl &&
             !this.previousUrl.includes(`${this.routerCharCheck.Login}`)
           ) {
-            this.accountService.getGuilds();
+            //this.accountService.getGuilds();
+            this.accountService.getUser();
           }
           if (
             this.currentUrl.includes(this.routerCharCheck.Album) ||
@@ -202,14 +203,6 @@ export class HeaderComponent implements OnInit {
           ) {
             await this.accountService.updateEmailValidationStatus();
             this.emailValidationSuccessPage = true;
-            this.snackBar
-              .open(this.systemResponses.ValidateEmailSuccess, 'OK', {
-                verticalPosition: this.verticalPosition,
-              })
-              .afterDismissed()
-              .subscribe(() => {
-                this.router.navigate(['/home']);
-              });
           }
           if (this.currentUrl.match(`/${this.routerCharCheck.BotDownload}`)) {
             this.thanksBotDownloadPage = true;
@@ -230,10 +223,15 @@ export class HeaderComponent implements OnInit {
             const userData = this.currentUrl.substring(
               this.currentUrl.indexOf('=') + 1
             );
-            await this.accountService.integrateAccounts(
+            const userIntegrated = await this.accountService.integrateAccounts(
               this.accountService.user._id,
               userData
             );
+            if (userIntegrated !== true) {
+              this.snackBar.open(userIntegrated, 'OK', {
+                verticalPosition: this.verticalPosition,
+              });
+            }
           }
           if (
             this.currentUrl.includes(

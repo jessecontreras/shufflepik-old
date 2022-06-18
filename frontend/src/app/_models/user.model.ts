@@ -14,6 +14,7 @@ export interface User {
   };
   albums?: Album[];
   discord: {
+    id?: string;
     connected: boolean;
     guilds?: Guild[];
     avatar?: string;

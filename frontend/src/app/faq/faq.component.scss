@@ -24,7 +24,6 @@ $highlight-purple: #3601d6;
   max-height: 75vh;
   //Since this entire area is a form, caret appears where elements are outside of the actual elements.
   caret-color: transparent;
-  //place-items: center center;
 }
 .heading {
   grid-area: 1/1/2/12;
@@ -147,43 +146,8 @@ hr {
   border-style: solid;
 }
 
-.password-change-input {
-  grid-row: 3/4;
-}
-
-.password-change-button {
-  text-align: center;
-  grid-row: 8/10;
-  color: $light-purp;
-  background-color: #ffffff;
-}
-
-.password-change-input,
-.password-change-button {
-  grid-column: 1/8;
-}
-
-.password-change-button {
+.close-icon {
   cursor: pointer;
-}
-
-select {
-  border-width: 2px;
-}
-
-.register-email,
-.email-error-message {
-  grid-row: 1/2;
-}
-
-.register-password,
-.password-error-message {
-  grid-row: 2/3;
-}
-
-.email-error-message,
-.password-error-message {
-  align-self: end;
 }
 
 // Small devices (landscape phones, 576px and up)
@@ -207,24 +171,6 @@ select {
 
 // X-Large devices (large desktops, 1200px and up)
 @media (min-width: 1200px) {
-  input,
-  button {
-    text-align: unset;
-  }
-
-  input,
-  button,
-  select {
-    max-width: none;
-  }
-  .password-match-prompt,
-  .password,
-  .confirm-password,
-  .password-error,
-  .confirm-password-error,
-  .password-change-button {
-    grid-column: 2/5;
-  }
 }
 
 // XX-Large devices (larger desktops, 1400px and up)

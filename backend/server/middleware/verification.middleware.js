@@ -38,13 +38,19 @@ async function jwtCheck(req, res, next) {
       }
       if (!userAndTokenValidity.jwtValid)
         return res.status(401).send("invalid token...");
+      //Next middleware func
       next();
     } else {
       return res.status(401).send("invalid token...");
     }
   } catch (err) {
-    console.log(err);
-    throw err;
+    if (err.toString()) {
+      if (err.toString().includes("jwt expired"))
+        return res.status(401).send("invalid token...");
+    } else {
+      console.log(err);
+      throw err;
+    }
   }
 }
 
@@ -59,9 +65,8 @@ async function userDataAndTokenValidity(encodedToken) {
   try {
     const decodedToken = jwt.verify(encodedToken, process.env.SECRETO_DE_AMOR);
     let userId = decodedToken.sub;
-    const mongoClient = await db_controller.instantiateMongoClient();
-    await mongoClient.connect();
-    const usersCollection = mongoClient
+    const client = await db_controller.mongo().getConnection();
+    const usersCollection = client
       .db(process.env.SHUFFLEPIK_DB)
       .collection("USERS");
     const user = await usersCollection.findOne({ _id: ObjectID(userId) });
@@ -71,9 +76,13 @@ async function userDataAndTokenValidity(encodedToken) {
       user: user,
     };
     return userData;
-  } catch {
+  } catch (err) {
     console.log(err);
-    throw err;
+    if (err.TokenExpiredError) {
+      res.json({ TokenExpiredError: true });
+    } else {
+      throw err;
+    }
   }
 }
 
@@ -92,7 +101,7 @@ async function checkUserCredentials(req, res, next) {
     if (!user) {
       return res.json({
         errorResponse:
-          "😵 An error occurred, please clear your browser cache and re-login. If this message persists, contact us via support@shufflepik.com",
+          "An error occurred, please clear your browser cache and re-login. If this message persists, contact us via support@shufflepik.com",
       });
     }
 
@@ -101,7 +110,7 @@ async function checkUserCredentials(req, res, next) {
     } else {
       return res.json({
         errorResponse:
-          "🚫 Your Discord must be connected and your email must be validated before uploading images",
+          "Discord must be actually connected. Email must be actually validated. Further spoofs may result in a ban.",
       });
     }
   } catch (err) {

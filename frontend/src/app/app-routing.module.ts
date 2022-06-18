@@ -13,6 +13,7 @@ import { ThanksBotDownloadComponent } from './thanks-bot-download/thanks-bot-dow
 import { TermsComponent } from './terms/terms.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { UserSettingsComponent } from './user-settings/user-settings.component';
+import { EmailValidationSuccessfulComponent } from './email-validation-successful/email-validation-successful.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/home', pathMatch: 'full' },
@@ -20,8 +21,13 @@ const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
   { path: 'thanks-bot-download', component: ThanksBotDownloadComponent },
+  {
+    path: 'email-validation-successful',
+    component: EmailValidationSuccessfulComponent,
+  },
   { path: 'terms', component: TermsComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
+
   {
     path: 'user-settings',
     component: UserSettingsComponent,

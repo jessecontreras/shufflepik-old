@@ -5,6 +5,7 @@ const fs = require("fs");
 //Load environment variables from .env file
 require("dotenv").config({ path: path.resolve(__dirname, "./.env") });
 
+
 const { Client, Intents } = require("discord.js");
 
 const discordClient = new Client({ intents: [Intents.FLAGS.GUILDS] });
@@ -28,5 +29,10 @@ for (const file of eventFiles) {
     discordClient.on(event.name, (...args) => event.execute(...args));
   }
 }
+
+//Node.js process, enable graceful shutdown
+process.on("SIGINT", () => {
+  process.exit(err ? 1 : 0)
+});
 
 discordClient.login(process.env.DISCORD_BOT_TOKEN);

@@ -2,8 +2,9 @@ let dayjs = require("dayjs");
 
 //Mongo client
 const MongoClient = require("mongodb").MongoClient;
-
 const { ObjectId } = require("bson");
+
+const uri = process.env.MONGO_URI;
 
 const ShufflepikCollection = {
   Users: "USERS",
@@ -12,35 +13,65 @@ const ShufflepikCollection = {
   DeletedContent: "DELETED_CONTENT",
 };
 
-let controller = {};
-controller.instantiateMongoClient = instantiateMongoClient;
-controller.getGuildIntersect = getGuildIntersect;
-controller.getAllGuilds = getAllGuilds;
-controller.getAllUsers = getAllUsers;
-controller.getUserByEmail = getUserByEmail;
-controller.updateUserByID = updateUserByID;
-controller.updateUserOnLogin = updateUserOnLogin;
-controller.deleteImage = deleteImage;
-
-module.exports = controller;
-
 /**
- * Creates an instance of Mongo (client)
- * @returns An instance of the Mongo client
+ * Creates an instance of a Mongo connection, creates connection.
+ * @returns Mongo client promise. More specifically returns an active mongo connection.
  */
-async function instantiateMongoClient() {
+//async function client() {
+let mongo = function () {
   try {
-    const client = new MongoClient(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    let db = null;
+    async function dbConnect() {
+      try {
+        const client = new MongoClient(uri, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        });
 
-    return client;
-  } catch (error) {
-    console.log(error);
-    throw error;
+        let _db = await client.connect();
+
+        return _db;
+      } catch (err) {
+        console.log(err);
+        return err;
+      }
+    }
+
+    async function getClient() {
+      try {
+        const client = new MongoClient(uri, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        });
+        return client;
+      } catch (err) {
+        console.log(err);
+        throw e;
+      }
+    }
+
+    async function getConnection() {
+      try {
+        if (db != null) {
+          return db;
+        } else {
+          db = await dbConnect();
+          return db;
+        }
+      } catch (err) {
+        return err;
+      }
+    }
+
+    return {
+      getConnection: getConnection,
+      getClient: getClient,
+    };
+  } catch (err) {
+    console.log(err);
+    throw err;
   }
-}
+};
 
 //*****                                                         *****//
 //*****                                                         *****//
@@ -150,10 +181,13 @@ async function getSPUser(discordId) {
 
 async function getAllGuilds() {
   try {
-    const client = await instantiateMongoClient();
-    await client.connect();
+    //const client = await instantiateMongoClient();
 
-    const collection = client
+    //await client.connect();
+    //const client = await clientPromise();
+    const client = await mongo().getConnection();
+
+    const collection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Guilds);
 
@@ -162,16 +196,18 @@ async function getAllGuilds() {
     return allGuilds;
   } catch (err) {
     console.log(err);
-    throw errl;
+    throw err;
   }
 }
 
 async function getAllUsers() {
   try {
-    const client = await instantiateMongoClient();
-    await client.connect();
+    //const client = await instantiateMongoClient();
+    //await client.connect();
+    //const client = await clientPromise();
+    const client = await mongo().getConnection();
 
-    const collection = client
+    const collection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Users);
 
@@ -198,11 +234,14 @@ async function getAllUsers() {
 async function updateUserByID(shufflepikUserID, user) {
   try {
     //Instantiate mongo client;
-    const client = await instantiateMongoClient();
+    //const client = await instantiateMongoClient();
     //Connect MongoClient
-    await client.connect();
+    //await client.connect();
+    //const client = await clientPromise();
+    const client = await mongo().getConnection();
+
     //Define collection as users collection
-    const collection = client
+    const collection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Users);
     //Update the user in database
@@ -217,6 +256,7 @@ async function updateUserByID(shufflepikUserID, user) {
             avatar: user.discord.avatar,
             token: user.discord.token,
             guilds: user.discord.guilds,
+            username: user.discord.username,
             id: user.discord.id,
             discriminator: user.discord.discriminator,
           },
@@ -245,9 +285,12 @@ async function updateUserByID(shufflepikUserID, user) {
  */
 async function getUserByEmail(email) {
   try {
-    const client = await instantiateMongoClient();
-    await client.connect();
-    const collection = client
+    //const client = await instantiateMongoClient();
+    //await client.connect();
+    //const client = await clientPromise();
+    const client = await mongo().getConnection();
+
+    const collection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Users);
     const user = await collection.findOne({
@@ -271,12 +314,15 @@ async function getUserByEmail(email) {
 async function deleteImage(imageData) {
   try {
     //Instantiate mongo client;
-    const client = await instantiateMongoClient();
+    //const client = await instantiateMongoClient();
     //Connect MongoClient
-    await client.connect();
+    // await client.connect();
+    //const client = await clientPromise();
+    const client = await mongo().getConnection();
+
     const discordId = imageData.image_url.split("/")[2];
     //Define collection as users collection
-    const guildsCollection = client
+    const guildsCollection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Guilds);
     let deletedImageGuildData = await guildsCollection.findOneAndUpdate(
@@ -351,3 +397,16 @@ async function deleteImage(imageData) {
     throw err;
   }
 }
+
+let controller = {};
+//controller.clientPromise = clientPromise;
+controller.getGuildIntersect = getGuildIntersect;
+controller.getAllGuilds = getAllGuilds;
+controller.getAllUsers = getAllUsers;
+controller.getUserByEmail = getUserByEmail;
+controller.updateUserByID = updateUserByID;
+controller.updateUserOnLogin = updateUserOnLogin;
+controller.deleteImage = deleteImage;
+controller.mongo = mongo;
+
+module.exports = controller;

@@ -20,7 +20,7 @@
   <div class="sp-header-logo" routerLink="/home"></div>
   <div (click)="toggleNavCard($event)" class="user-avatar">
     <mat-icon
-      *ngIf="!user.discord.avatar"
+      *ngIf="!user.discord.avatar || user.discord.avatar == null"
       class="material-icons-outlined md-36 md-light account-circle"
       >account_circle
     </mat-icon>
@@ -88,7 +88,7 @@
         *ngIf="!user.email_validation.validated"
         (click)="showSendEmailSnackbar()"
       >
-        Send Verify Email
+        Verify Email
       </div>
       <div (click)="inviteSp()" class="avatar-nav-card__invite-sp">
         Invite Shufflepik

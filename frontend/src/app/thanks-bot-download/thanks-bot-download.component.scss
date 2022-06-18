@@ -1,5 +1,5 @@
-$dark-purp: #5555aa;
-$light-purp: #6666cc;
+$dark-purp: #4e54c8;
+$light-purp: #5f66f2;
 $highlight-purp: #3601d6;
 $d-purp: #5865f2;
 
@@ -51,6 +51,7 @@ $d-purp: #5865f2;
   grid-row: 6/10;
   margin: 0;
   padding: 5px 0;
+  min-height: 150px;
   grid-template-columns: repeat(5, 1fr);
   grid-template-rows: repeat(9, 1fr);
   place-items: center;

@@ -96,6 +96,8 @@ export class AccountService {
         albums.length === currentAlbums?.length ? false : true;
       if (!albumChanges) return;
       this.user.albums = albums;
+      localStorage.setItem('user', JSON.stringify(this.user));
+
       this.userSubject.next(this.user);
 
       //const updateAlbums = albums.length ;
@@ -113,6 +115,25 @@ export class AccountService {
       );
       //update a users guilds
       this.user.discord.guilds = guilds;
+      localStorage.setItem('user', JSON.stringify(this.user));
+      this.userSubject.next(this.user);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  }
+
+  async getUser() {
+    try {
+      const _id = this.user._id;
+      const updatedUser: any = await lastValueFrom(
+        this.http.get<any[]>(`${environment.apiUrl}/users/${_id}/user`)
+      );
+
+      this.user.discord = updatedUser.discord;
+      this.user.email_validation = updatedUser.email_validation;
+      this.user.email = updatedUser.email;
+      localStorage.setItem('user', JSON.stringify(this.user));
       this.userSubject.next(this.user);
     } catch (err) {
       console.log(err);
@@ -128,6 +149,7 @@ export class AccountService {
       );
       //update a users albums
       this.user.albums = albums;
+      localStorage.setItem('user', JSON.stringify(this.user));
       this.userSubject.next(this.user);
     } catch (err) {
       console.log(err);
@@ -148,6 +170,8 @@ export class AccountService {
         return album.id === albumId;
       });
       this.user.albums![currentAlbumIndex!].images = images;
+      localStorage.setItem('user', JSON.stringify(this.user));
+
       //currentAlbum!.images = images;
       this.userSubject.next(this.user);
     } catch (err) {
@@ -190,11 +214,16 @@ export class AccountService {
       const integratedUser = await lastValueFrom(
         this.http.post<User>(`${environment.apiUrl}/users/integrate`, user)
       );
-
-      //Set returned user in local storage
-      localStorage.setItem('user', JSON.stringify(integratedUser));
-      //Emit changes to user subject
-      this.userSubject.next(integratedUser);
+      if (integratedUser._id) {
+        //Set returned user in local storage
+        localStorage.setItem('user', JSON.stringify(integratedUser));
+        //Emit changes to user subject
+        this.userSubject.next(integratedUser);
+        return true;
+      } else {
+        const errorResponse = integratedUser as any;
+        return errorResponse.duplicateUserError;
+      }
     } catch (err) {
       console.log(err);
       throw err;
@@ -259,7 +288,11 @@ export class AccountService {
       throw err;
     }
   }
-
+  /**
+   * Updates user object email_validation status.
+   *
+   * @returns
+   */
   async updateEmailValidationStatus() {
     try {
       if (this.user) {
@@ -305,7 +338,6 @@ export class AccountService {
    */
   async resetPassword(token: string, password: string) {
     try {
-      console.log('Made it to reset password service:');
       const resetPasswordObj = { token: token, password: password };
       const response = await lastValueFrom(
         this.http.post(

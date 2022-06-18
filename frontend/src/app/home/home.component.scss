@@ -87,7 +87,8 @@ $highlight-purple: #3601d6;
 .navigate-next {
   z-index: 10;
   align-self: center;
-  grid-row: 6/8;
+  //grid-row: 6/8;
+  grid-row: 7/8;
 }
 .navigate-next {
   //grid-row: 6/8;
@@ -379,10 +380,12 @@ mat-progress-bar {
   }
 
   .navigate-next {
+    grid-row: 6/8;
     place-self: center;
   }
 
   .navigate-before {
+    grid-row: 6/8;
     place-self: center;
   }
 

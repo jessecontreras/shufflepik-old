@@ -2,6 +2,7 @@
 let express = require("express");
 let router = express.Router();
 const querystring = require("querystring");
+const controller = require("../controllers/db.controller");
 const user_controller = require("../controllers/users.controller");
 const verification_middleware = require("../middleware/verification.middleware");
 
@@ -13,6 +14,7 @@ router.post("refresh-user", verification_middleware.jwtCheck, refreshUserData);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 router.post("/email-validation", sendEmailValidation);
+router.get("/", getUser);
 router.get("/password-reset", sendPasswordResetPage);
 router.get("/ve", validateEmail);
 router.get("/:_id/guilds", verification_middleware.jwtCheck, guilds);
@@ -22,6 +24,7 @@ router.get(
   verification_middleware.jwtCheck,
   images
 );
+router.get("/:_id/user", verification_middleware.jwtCheck, getUser);
 
 //router.get("/:_id/guilds", verification_middleware, guilds);
 router.delete("/:_id", verification_middleware.jwtCheck, _delete);
@@ -62,11 +65,30 @@ async function register(req, res) {
   }
 }
 
+/**
+ * Returns data relevant to user to integrate.
+ * If Discord account is already associated with a Shufflepik account, do no integrate user, send user message notifying them one Discord user per account.
+ *
+ * @param {*} req
+ * @param {*} res
+ */
 async function integrate(req, res) {
   try {
-    const integratedUser = await user_controller.integrateUser(req.body);
+    const integrateUser = await user_controller.integrateUser(req.body);
 
-    res.send(integratedUser);
+    res.send(integrateUser);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+async function getUser(req, res) {
+  try {
+    const _id = req.params._id;
+    const user = await user_controller.getUser(_id);
+
+    res.json(user);
   } catch (err) {
     console.log(err);
     throw err;
@@ -99,7 +121,8 @@ async function validateEmail(req, res) {
     const controllerResponse = await user_controller.validateEmail(
       req.query.validation_token
     );
-    res.redirect(controllerResponse);
+
+    res.redirect(302, controllerResponse);
   } catch (err) {
     console.log(err);
     throw err;
@@ -130,7 +153,6 @@ async function sendEmailValidation(req, res) {
 
 async function albums(req, res) {
   try {
-    console.log("album route");
     const _id = req.params._id;
     const albums = await user_controller.getAlbums(_id);
     res.send(albums);
@@ -142,7 +164,6 @@ async function albums(req, res) {
 
 async function guilds(req, res) {
   try {
-    console.log("guild route");
     const _id = req.params._id;
     const guilds = await user_controller.getGuilds(_id);
     res.send(guilds);
@@ -156,8 +177,6 @@ async function images(req, res) {
     const albumId = req.params.albumId;
     const images = await user_controller.getImages(_id, albumId);
     res.send(images);
-
-    console.log("image route");
   } catch (err) {
     console.log(err);
     throw err;

@@ -52,13 +52,16 @@ module.exports = controller;
 async function connect(guildInfo) {
   //the dafuq bitch what the f are you fing for after me there hsould be no more something something need me to roll
   //Create a client instance and assign to const client
-  const client = await db_controller.instantiateMongoClient();
+  //const client = await db_controller.instantiateMongoClient();
   //instantiateMongoClient();
   try {
     //Connect Mongo client.
-    await client.connect();
+    //await client.connect();
+    //const client = await db_controller.clientPromise();
+    const client = await db_controller.mongo().getConnection();
+
     //Assign database and collection to our Mongo client connection, in this case our Guilds collection.
-    const collection = client
+    const collection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Guilds);
     const guild = await collection.findOne({
@@ -103,16 +106,19 @@ async function connect(guildInfo) {
 
 async function installBot(req, res) {
   //Create a client instance and assign to const client
-  const client = await db_controller.instantiateMongoClient();
+  //const client = await db_controller.instantiateMongoClient();
   try {
     //Get a user's OAuth2 bearer token
     const tokenObject = await getBotToken(req.code);
     //User object
     let discordUser = await getDiscordUser(tokenObject);
     //Connect Mongo client.
-    await client.connect();
+    //await client.connect();
+    //const client = await db_controller.clientPromise()
+    const client = await db_controller.mongo().getConnection();
+
     //Assign database and collection to our Mongo client connection, in this case our Guilds collection.
-    const shufflepikCollection = client
+    const shufflepikCollection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Guilds);
     //Find an existing guild in DB
@@ -121,7 +127,6 @@ async function installBot(req, res) {
     });
 
     if (guild) {
-      console.log("Bot already exists for this guild!");
       return Response.ExistingGuild;
     } else {
       shufflepikGuild = {
@@ -147,8 +152,6 @@ async function installBot(req, res) {
     console.log(err);
     return false;
     //throw err;
-  } finally {
-    await client.close();
   }
 }
 
@@ -258,8 +261,6 @@ async function getUserToken(code) {
  */
 async function getUserTokenUsingRefresh(refreshToken) {
   try {
-    console.log("In get user token using refresh");
-    console.log(refreshToken);
     const data = {
       client_id: process.env.DISCORD_CLIENT_ID,
       client_secret: process.env.DISCORD_CLIENT_SECRET,
@@ -279,7 +280,7 @@ async function getUserTokenUsingRefresh(refreshToken) {
     );
 
     const tokenData = await tempUserTokenData.json();
-    console.log(tokenData);
+
     //If refresh token exists in token data then token data is ok. However if not return false;
     if (tokenData.refresh_token) {
       const tokenObject = {
@@ -376,19 +377,14 @@ async function integrateUser(req, res) {
         req.id,
         userToIntegrate
       );
-      //User discord controller to pull fresh discord data of user
-
-      //Get Shufflepik Guilds
-      //const shufflepikGuilds = await db_controller.getAllGuilds();
 
       //Get guilds and album of a user
-      console.log("guild and album data is:");
       let guildAndAlbumData = await getIntersectingGuildsAndAlbums(
         updatedUser._id,
         updatedUser.discord.guilds,
         shufflepikGuilds
       );
-      //console.log(guildAndAlbumData);
+
       const user = {
         _id: updatedUser._id,
         jwt: jwt.sign(

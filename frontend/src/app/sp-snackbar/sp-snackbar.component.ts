@@ -22,9 +22,7 @@ export class SpSnackBarComponent implements OnInit {
    */
   async dismiss() {
     try {
-      //this.snackBar.dismiss();
       this.snackBarRef.dismissWithAction();
-      //console.log(this.snackBarRef.)
     } catch (err) {
       console.log(err);
       throw err;

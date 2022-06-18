@@ -69,9 +69,7 @@ export class AlbumComponent implements OnInit {
           break;
         }
       }
-      this.images = currentAlbum!.images;
-      //reverse order of album images while we are here, can always move this somewhere more appropriate
-      //this.album.images = this.album.images.slice().reverse();
+      this.images = currentAlbum!.images.slice().reverse();
     } catch (err) {
       console.log(err);
       throw err;

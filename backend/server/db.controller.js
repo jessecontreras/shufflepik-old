@@ -146,7 +146,6 @@ async function getSPUser(discordId) {
 
 async function getAllGuilds() {
   try {
-    console.log("made it to get all guilds");
     const client = await instantiateMongoClient();
     await client.connect();
 
@@ -156,8 +155,7 @@ async function getAllGuilds() {
 
     const allGuilds = await collection.find({}).toArray();
 
-    console.log("All guilds are:");
-    console.log(allGuilds);
+
 
     return allGuilds;
   } catch (err) {
@@ -176,9 +174,6 @@ async function getAllUsers() {
       .collection(ShufflepikCollection.Users);
 
     const allUsers = await collection.find({}).toArray();
-
-    console.log("All users are:");
-    console.log(allUsers);
 
     return allUsers;
   } catch (err) {
@@ -336,8 +331,7 @@ async function deleteImage(imageData) {
     );
 
     updatedDoc = updatedDoc.value;
-    console.log("updated doc is:");
-    console.log(updatedDoc);
+  
 
     const returnObj = {
       album_id: imageData.discord_id,

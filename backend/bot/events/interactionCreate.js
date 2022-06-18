@@ -2,6 +2,7 @@ const shufflepikController = require("../controllers/commands.contoller");
 const { MessageEmbed, MessageAttachment } = require("discord.js");
 const path = require("path");
 const dayjs = require("dayjs");
+const fs = require("fs-extra");
 
 module.exports = {
   name: "interactionCreate",
@@ -9,9 +10,9 @@ module.exports = {
     if (!interaction.isCommand()) return;
     switch (interaction.commandName) {
       case "shufflepik":
-        const userAvatar = `https://cdn.discordapp.com/avatars/${interaction.user.id}/${interaction.user.avatar}.png`;
+        await interaction.deferReply();
         const randomImageData = await shufflepikController.shufflepik(
-          interaction.guildId,
+          interaction.member.guild.id,
           interaction.member.user.id
         );
         //If there are no images in guild send back message letting user know
@@ -20,9 +21,10 @@ module.exports = {
             .setColor("#4e54c8")
             .addField(
               "🤷 Where are da pics?",
-              "It appears this server has no images in its image pool. Feel feel to upload pictures to this server's image pool through Shufflepik. Create an account here [Shufflepik](https://shufflepik.com)"
+              "It appears this server has no images in its image pool. If you're not on Shufflepik create an account 👉 [Shufflepik](https://shufflepik.com) then upload images to this server's image pool!"
             );
-          await interaction.reply({ embeds: [embed] });
+          //await interaction.reply({ embeds: [embed] });
+          await interaction.editReply({ embeds: [embed] });
           return;
         }
         //Return the filename and extension of image
@@ -34,7 +36,10 @@ module.exports = {
             `${process.env.UPLOADS_RELATIVE_PATH_PREFIX}${randomImageData.imageUrl}`
           )
         );
-
+        const placeholderIcon = "https://i.imgur.com/2cywyH9.png";
+        const messageAuthorIcon = randomImageData.avatar
+          ? `https://cdn.discordapp.com/avatars/${interaction.user.id}/${randomImageData.avatar}.png`
+          : placeholderIcon;
         //Wrap dateUploaded string with date.toLocaleString object to get localized, in this case PST (PT) date object.
         let pst = new Date(randomImageData.dateUploaded).toLocaleString(
           "en-US",
@@ -47,7 +52,8 @@ module.exports = {
           .setTitle(randomImageData.imageTitle)
           .setAuthor({
             name: `Posted by : ${randomImageData.uploadedByUsername}`,
-            iconURL: userAvatar,
+            iconURL: messageAuthorIcon,
+            url: `https://shufflepik.com`,
           })
           .addField(
             "Date uploaded",
@@ -61,7 +67,8 @@ module.exports = {
             iconURL: "https://i.imgur.com/2cywyH9.png",
           });
         //await interaction.reply("pong!");
-        await interaction.reply({ embeds: [embed], files: [file] });
+        //await interaction.reply({ embeds: [embed], files: [file] });
+        await interaction.editReply({ embeds: [embed], files: [file] });
       default:
         break;
     }

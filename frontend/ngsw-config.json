@@ -11,6 +11,7 @@
         "/apis/users/integrate",
         "/apis/discord/xchange-info",
         "/apis/discord/xchange-info-again",
+        "/apis/discord/install",
         "/apis/users/*images*/**",
         "/apis/users/*password*/**",
         "/apis/users/*email*/**"
@@ -23,11 +24,15 @@
     },
     {
       "name": "state-while-revalidate",
-      "urls": ["/apis/users/*guilds*/**", "/apis/users/*albums*/**"],
+      "urls": [
+        "/apis/users/*guilds*/**",
+        "/apis/users/*albums*/**",
+        "/apis/users/*user*/**"
+      ],
       "cacheConfig": {
         "maxSize": 25,
-        "maxAge": "60s",
-        "timeout": "50u",
+        "maxAge": "120s",
+        "timeout": "900u",
         "strategy": "freshness"
       }
     }

@@ -32,6 +32,7 @@ import { SpSnackBarComponent } from './sp-snackbar/sp-snackbar.component';
 import { ParseDatePipe } from './_pipes/parse-date.pipe';
 import { FormatDatePipe } from './_pipes/format-date.pipe';
 import { FaqComponent } from './faq/faq.component';
+import { EmailValidationSuccessfulComponent } from './email-validation-successful/email-validation-successful.component';
 @NgModule({
   declarations: [
     AppComponent,
@@ -56,6 +57,7 @@ import { FaqComponent } from './faq/faq.component';
     ParseDatePipe,
     FormatDatePipe,
     FaqComponent,
+    EmailValidationSuccessfulComponent,
 
   ],
   imports: [

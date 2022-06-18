@@ -46,6 +46,7 @@ export class AppComponent {
         );
       } else {
         const isConnectedToInternet = true;
+
         await this.connectivityService.updateConnectionStatus(
           isConnectedToInternet
         );
@@ -55,7 +56,6 @@ export class AppComponent {
       throw err;
     }
   }
-
 
   async consoleLogGif() {
     try {
