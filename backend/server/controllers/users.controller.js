@@ -1185,29 +1185,24 @@ async function getEmailServiceDetails() {
 
 async function update(_id) {}
 async function _delete(_id) {
-  //let deletedUser;
   try {
-    //const client = await db_controller.clientPromise();
     const client = await db_controller.mongo().getConnection();
 
     const usersCollection = await client
       .db(process.env.SHUFFLEPIK_DB)
       .collection(ShufflepikCollection.Users);
 
-    //const usersCollection = await mongoCollection(ShufflepikCollection.Users);
     const deleteUserResponse = await usersCollection.findOneAndDelete({
       _id: ObjectId(_id),
     });
 
     const deletedUser = deleteUserResponse.value;
+    console.log(deletedUser);
 
     if (deletedUser) {
       const deletedUsersCollection = client
         .db(process.env.SHUFFLEPIK_DB)
         .collection(ShufflepikCollection.DeletedUsers);
-      /* const deletedUsersCollection = await mongoCollection(
-        ShufflepikCollection.DeletedUsers
-      );*/
 
       await deletedUsersCollection.updateOne(
         { _id: ObjectId(_id) },
