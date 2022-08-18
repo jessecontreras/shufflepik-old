@@ -9,6 +9,7 @@ import { Image } from '../_models/image.model';
 import { AccountService } from '../_services/account.service';
 import { User } from '../_models/user.model';
 import { environment } from 'src/environments/environment';
+import { lastValueFrom } from 'rxjs/internal/lastValueFrom';
 
 @Component({
   selector: 'app-album',
@@ -32,6 +33,8 @@ export class AlbumComponent implements OnInit {
   //This will be a reference array filled with index values that represent an existing image value
   //sanitizedAlbumImages: string[] = [];
   sanitizedImages: string[] = [];
+  //
+  loadingImages: any[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -50,7 +53,6 @@ export class AlbumComponent implements OnInit {
       await this.getImages();
       await this.imageSubscription();
       await this.sanitizeImages();
-
       return;
     } catch (err) {
       console.log(err);
@@ -58,17 +60,29 @@ export class AlbumComponent implements OnInit {
     }
   }
 
+  async imageLoaded(index: number) {
+    console.log(`Image with index of ${index} is loaded`);
+    this.loadingImages[index].loaded = true;
+  }
+
   async imageSubscription() {
     try {
       const albumId = this.route.snapshot.paramMap.get('id')!.toString();
       let currentAlbum: Album;
+      console.log('Made it to subscription');
 
       for (let i = 0; i < this.accountService.user.albums?.length!; i++) {
         if (this.accountService.user.albums![i].id === albumId) {
+          this.loadingImages = [
+            ...Array(this.accountService.user.albums![i].images.length).fill({
+              loaded: false,
+            }),
+          ];
           currentAlbum = this.accountService.user.albums![i];
           break;
         }
       }
+      console.log('Time to reassign images');
       this.images = currentAlbum!.images.slice().reverse();
     } catch (err) {
       console.log(err);
@@ -93,12 +107,6 @@ export class AlbumComponent implements OnInit {
   async sanitizeImages() {
     try {
       const imageLocPrefix = environment.apiUrl;
-      /*for (let i = 0; i < this.album.images.length; i++) {
-        const sanitizedUrl = await this.mediaService.getObjectUrl(
-          `${imageLocPrefix}${this.album.images[i].image_url}`
-        );
-        this.sanitizedAlbumImages.push(sanitizedUrl);
-      }*/
       for (let i = 0; i < this.images.length; i++) {
         const sanitizedUrl = await this.mediaService.getObjectUrl(
           `${imageLocPrefix}${this.images[i].image_url}`
@@ -158,9 +166,15 @@ export class AlbumComponent implements OnInit {
    */
   async deleteSelectedImage(image: Image) {
     try {
-      const deletedImageIndex: any = await this.mediaService.deleteImage(image);
-      //this.sanitizedAlbumImages.splice(deletedImageIndex, 1);
-      this.sanitizedImages.splice(deletedImageIndex, 1);
+      const deletedImageIndex: number = await this.mediaService.deleteImage(
+        image
+      );
+      const reversedIndexValue = this.images.length - 1 - deletedImageIndex;
+
+      //this.images.splice(deletedImageIndex, 1);
+      //this.sanitizedImages.splice(deletedImageIndex, 1);
+      this.images.splice(reversedIndexValue, 1);
+      this.sanitizedImages.splice(reversedIndexValue, 1);
       this.deleteImage = false;
       //Now that the image has been deleted, we remove overlay
       await this.hideOverlay();
@@ -171,9 +185,7 @@ export class AlbumComponent implements OnInit {
     }
   }
 
-  toggleDeleteImage() {
-    //this.deleteImage = !this.deleteImage;
-  }
+  toggleDeleteImage() {}
 
   /**
    * Sets delete image flag to true. Uses image index to determine which image is selected.

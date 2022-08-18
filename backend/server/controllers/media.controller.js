@@ -1,4 +1,7 @@
-//Controller dependencies
+//Local dependencies
+const { Connection } = require("../helpers/mongoConnection.helper");
+const { ObjectId } = require("bson");
+// Controller dependencies
 const util = require("util");
 const multer = require("multer");
 const path = require("path");
@@ -7,12 +10,6 @@ let dayjs = require("dayjs");
 
 const sharp = require("sharp");
 
-//Mongo instance
-const MongoDb = require("mongodb");
-//Mongo client
-const MongoClient = MongoDb.MongoClient;
-//Mongo object Id
-//const ObjectID = MongoDb.ObjectID;
 //Guilds Collection reference
 const ShufflepikCollection = {
   Users: "USERS",
@@ -31,7 +28,8 @@ const maxFileSize = 10000000; //10 MBs
 const db_controller = require("./db.controller");
 
 const { result } = require("lodash");
-
+//Helper modules
+const token_helper = require("../helpers/token.helper");
 //Create controller object
 let controller = {};
 
@@ -78,10 +76,24 @@ async function uploadImage(req, res) {
 
         updatedImageObjects.push(matchingImage);
       }
+      let dataToSendToClient;
+      const areTokensNeeded = res.locals.refreshToken ? true : false;
+      //TODO: IF there is an issue or error this is where you should look!!!
+      dataToSendToClient = updatedImageObjects;
+      if (areTokensNeeded) {
+        await token_helper.setTokenCookie(res, res.locals.refreshToken);
+        //jwtToken = res.locals.jwt;
+        dataToSendToClient = {
+          jwt: res.locals.jwt,
+          updatedImages: updatedImageObjects,
+        };
+      }
+      res.json(dataToSendToClient);
       //THIS IS HOW I HAD IT BEFORE TO
-      res.json({
+      /*res.json({
+        jwt: jwtToken,
         updatedImages: updatedImageObjects,
-      });
+      });*/
       //return updatedImageObjects;
     } else {
       return res.json({
@@ -274,6 +286,7 @@ async function moveImageToGuildDir(payload) {
  */
 async function deleteUserAccountImages(imageLocationReferences) {
   try {
+    if (imageLocationReferences.length <= 0) return;
     for (i = 0; i < imageLocationReferences.length; i++) {
       let currentUrl = imageLocationReferences[i].image_url;
       //Current (relative) location of file to be moved
@@ -306,16 +319,7 @@ async function deleteUserAccountImages(imageLocationReferences) {
  * @returns
  */
 async function storeUploadInfoToDB(data, uploadDestinations) {
-  //Instantiate Mongo client
-  //const client = await db_controller.instantiateMongoClient();
   try {
-    //Connect Mongo client
-    const client = await db_controller.mongo().getConnection();
-
-    //Sufflepik guilds collection
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
     //Look into making this a for loop for the same of async///----~~!!!!!!
     const imagePoolsToReturn = [];
     // await uploadDestinations.forEach(async (filePath) => {
@@ -327,32 +331,35 @@ async function storeUploadInfoToDB(data, uploadDestinations) {
       const filePath = relativeFilePath.substring(1).replace(/\s/g, "");
 
       const guildId = filePath.split("/")[2];
-      const updatedDoc = await collection.findOneAndUpdate(
-        {
-          "discord.id": guildId,
-        },
-        {
-          $push: {
-            image_pool: {
-              _id: new MongoDb.ObjectId(),
-              date_uploaded: dayjs().format(),
-              uploaded_by_discord_username: data.uploaded_by_discord_username,
-              uploaded_by_discord_id: data.uploaded_by_discord_id,
-              uploaded_by_id: data.uploaded_by_id,
-              image_title: data.image_title,
-              image_url: filePath,
-              likes: null,
-              flags: 0,
-              nsfw: null,
+
+      const updatedDoc = await Connection.db
+        .collection(ShufflepikCollection.Guilds)
+        .findOneAndUpdate(
+          {
+            "discord.id": guildId,
+          },
+          {
+            $push: {
+              image_pool: {
+                _id: new ObjectId(),
+                date_uploaded: dayjs().format(),
+                uploaded_by_discord_username: data.uploaded_by_discord_username,
+                uploaded_by_discord_id: data.uploaded_by_discord_id,
+                uploaded_by_id: data.uploaded_by_id,
+                image_title: data.image_title,
+                image_url: filePath,
+                likes: null,
+                flags: 0,
+                nsfw: null,
+              },
             },
           },
-        },
-        {
-          upsert: true,
-          //returnOriginal: false,
-          returnDocument: "after",
-        }
-      );
+          {
+            upsert: true,
+            //returnOriginal: false,
+            returnDocument: "after",
+          }
+        );
 
       const updatedImagePool = updatedDoc.value.image_pool;
       imagePoolsToReturn.push(updatedImagePool);
@@ -373,36 +380,27 @@ async function storeUploadInfoToDB(data, uploadDestinations) {
 
 async function shufflepik(discordGuildId) {
   try {
-    //Instantiate Mongo client
-    //const client = await db_controller.instantiateMongoClient();
-    //Connect Mongo client
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
-
-    //Sufflepik guilds collection
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    let shufflepikQuery = await guildsCollection.aggregate([
-      {
-        $match: {
-          "discord.id": discordGuildId,
+    let shufflepikQuery = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .aggregate([
+        {
+          $match: {
+            "discord.id": discordGuildId,
+          },
         },
-      },
-      {
-        $unwind: "$image_pool",
-      },
-      {
-        $sample: { size: 1 },
-      },
-      {
-        $project: {
-          //_id: 0,
-          imageData: "$image_pool",
+        {
+          $unwind: "$image_pool",
         },
-      },
-    ]);
+        {
+          $sample: { size: 1 },
+        },
+        {
+          $project: {
+            //_id: 0,
+            imageData: "$image_pool",
+          },
+        },
+      ]);
     for await (const doc of shufflepikQuery) {
       shufflepikQuery = doc.imageData;
     }
@@ -495,26 +493,3 @@ const upload = multer({
 
 //export default controller;
 module.exports = controller;
-
-/*app.post("/", upload.single("picture"), async (req, res) => {
-  fs.access("./uploads", (error) => {
-    if (error) {
-      fs.mkdirSync("./uploads");
-    }
-  });
-  const {
-    buffer,
-    originalname
-  } = req.file;
-  const timestamp = new Date().toISOString();
-  const ref = `${timestamp}-${originalname}.webp`;
-  await sharp(buffer)
-    .webp({
-      quality: 20
-    })
-    .toFile("./uploads/" + ref);
-  const link = `http://localhost:3000/${ref}`;
-  return res.json({
-    link
-  });
-});*/

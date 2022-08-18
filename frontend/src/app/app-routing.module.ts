@@ -16,7 +16,6 @@ import { UserSettingsComponent } from './user-settings/user-settings.component';
 import { EmailValidationSuccessfulComponent } from './email-validation-successful/email-validation-successful.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/home', pathMatch: 'full' },
   { path: 'home/:id', component: HomeComponent, canActivate: [AuthGuard] },
   { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
   { path: 'login', component: LoginComponent },
@@ -40,6 +39,7 @@ const routes: Routes = [
   },
   { path: 'album/:id', component: AlbumComponent, canActivate: [AuthGuard] },
   { path: 'reset-password/:id', component: ResetPasswordComponent },
+  { path: '', redirectTo: '/home', pathMatch: 'full' },
   // otherwise redirect to home
   { path: '**', redirectTo: '' },
 ];

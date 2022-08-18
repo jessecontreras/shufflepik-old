@@ -80,11 +80,11 @@ export class HeaderComponent implements OnInit {
   //System responses "enum"
   systemResponses = {
     ValidateEmailPrompt:
-      'Click on "Send email" if you would like an email sent to verify your email.',
+      'Click on "Send email" if you would like an email sent to confirm your email.',
     ValidateEmailSuccess:
-      'Thank you for validating your email! You are good to go 😎',
+      'Thank you for confirming your email! You are good to go 😎',
     ValidateEmailError:
-      'Something went wrong with validating your email. Request another link or contact us if you believe this is an error.',
+      'Something went wrong with confirming your email. Request another link or contact us if you believe this is an error.',
   };
 
   ngOnInit(): void {
@@ -110,7 +110,8 @@ export class HeaderComponent implements OnInit {
    * Logs user out of their account
    */
   logout() {
-    this.accountService.logout();
+    const revokeRefreshToken = true;
+    this.accountService.logout(revokeRefreshToken);
   }
 
   async userSubscription() {
@@ -153,6 +154,8 @@ export class HeaderComponent implements OnInit {
     try {
       this.router.events.subscribe(async (event) => {
         if (event instanceof NavigationEnd) {
+          console.log('In router url detection:');
+          console.log(event);
           //Reset all values on navigatiom change, these properties are stateless between navigation.
           this.displayBackButton = false;
           this.loginPage = false;
@@ -173,13 +176,20 @@ export class HeaderComponent implements OnInit {
             }
           }
 
-          //Navigation is at home but not after login nor after redirect from a non shufflepik page
+          //Navigation is at home but not after login nor after redirect from a non shufflepik page nor after integration/
+          //Why? Because this causes redundancy, this data is updated after these events.
           if (
             this.currentUrl.match(`/${this.routerCharCheck.Home}`) &&
             this.previousUrl &&
-            !this.previousUrl.includes(`${this.routerCharCheck.Login}`)
+            !this.previousUrl.includes(`${this.routerCharCheck.Login}`) &&
+            !this.previousUrl.includes(
+              `${this.routerCharCheck.IntegrateUserParams}`
+            )
           ) {
             //this.accountService.getGuilds();
+            console.log('Inside of getUser() in header');
+            console.log(this.previousUrl);
+            console.log(this.currentUrl);
             this.accountService.getUser();
           }
           if (
@@ -220,6 +230,7 @@ export class HeaderComponent implements OnInit {
               `${this.routerCharCheck.IntegrateUserParams}`
             )
           ) {
+            console.log('integrated shit');
             const userData = this.currentUrl.substring(
               this.currentUrl.indexOf('=') + 1
             );
@@ -227,11 +238,17 @@ export class HeaderComponent implements OnInit {
               this.accountService.user._id,
               userData
             );
+            console.log('user integrated is:');
+            console.log(userIntegrated);
             if (userIntegrated !== true) {
               this.snackBar.open(userIntegrated, 'OK', {
                 verticalPosition: this.verticalPosition,
               });
+              return;
             }
+            //Strip the paramaters from url.
+            //This avoids the user from trying to reintegrate user in the event user refreshes page
+            this.location.replaceState('/home');
           }
           if (
             this.currentUrl.includes(

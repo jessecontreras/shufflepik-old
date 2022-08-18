@@ -90,14 +90,11 @@ export class UserSettingsComponent implements OnInit {
     this.dialog.open(FaqComponent);
   }
 
-  /**
-   * Deletes a user account.
-   */
   async deleteAccount() {
     try {
       await this.accountService.delete(this.accountService.user._id);
-
-      this.accountService.logout();
+      const revokeRefreshToken = false;
+      this.accountService.logout(revokeRefreshToken);
     } catch (err) {
       console.log(err);
       throw err;

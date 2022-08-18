@@ -1,13 +1,18 @@
 <!--<div *ngIf="album" class="album-container">-->
 <div class="album-container">
   <div class="grid grid--album">
-    <ng-container
+    <!-- <ng-container
       *ngIf="images.length === sanitizedImages.length; else loadingTemplate"
-    >
-      <ng-container *ngFor="let image of sanitizedImages; let i = index">
-        <div class="album-item">
-          <img class="image" [src]="image" [alt]="images[i].image_title" />
-
+    >-->
+    <ng-container *ngFor="let image of images; let i = index">
+      <div class="album-item">
+        <ng-container *ngIf="sanitizedImages[i]">
+          <!--<img [ngStyle] class="image" [src]="image" [alt]="images[i].image_title" />-->
+          <img
+            class="image"
+            [src]="sanitizedImages[i]"
+            [alt]="images[i].image_title"
+          />
           <mat-icon
             class="mobile-display-overlay"
             (click)="displayOverlay(i)"
@@ -23,7 +28,7 @@
               openImageDialog({
                 title: images[i].image_title,
                 date_posted: images[i].date_uploaded,
-                image_url: image
+                image_url: sanitizedImages[i]
               })
             "
           ></div>
@@ -85,15 +90,24 @@
               </div>
             </div>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
+        <ng-container *ngIf="!sanitizedImages[i]">
+          <div class="album-item">
+            <div class="image--loading"></div>
+          </div>
+        </ng-container>
+        <!--<ng-container *ngIf="images[i] != sanitizedImages[i]">
+          <div class="image--loading"></div>
+        </ng-container>-->
+      </div>
     </ng-container>
-    <ng-template #loadingTemplate>
+    <!--</ng-container>-->
+    <!-- <ng-template #loadingTemplate>
       <ng-container *ngFor="let loadingImage of images; let i = index">
         <div class="album-item">
           <div class="image--loading"></div>
         </div>
       </ng-container>
-    </ng-template>
+    </ng-template>-->
   </div>
 </div>

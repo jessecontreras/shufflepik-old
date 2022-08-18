@@ -9,9 +9,10 @@ const verification_middleware = require("../middleware/verification.middleware")
 //Controllers
 const discord_controller = require("../controllers/discord.controller");
 const users_controller = require("../controllers/users.controller");
+//Helper modules
+const token_helper = require("../helpers/token.helper");
 //Routes
-
-router.get("/access", verification_middleware.jwtCheck, accessDiscordAccount);
+//router.get("/access", verification_middleware.jwtCheck, accessDiscordAccount);
 router.get("/install", installBot);
 router.post("/integrate", verification_middleware.jwtCheck, integrate);
 router.get("/xchange-info", exchangeInformation);
@@ -21,9 +22,10 @@ router.post("refresh-user", verification_middleware.jwtCheck, refreshUserData);
 //Exports
 module.exports = router;
 
-async function accessDiscordAccount(req, res) {
+/*async function accessDiscordAccount(req, res) {
   try {
-    const userData = await discord_controller.accessUser(req);
+    let userData = await discord_controller.accessUser(req);
+
     const query = querystring.stringify({
       data: userData,
     });
@@ -32,7 +34,7 @@ async function accessDiscordAccount(req, res) {
     console.log(err);
     throw err;
   }
-}
+}*/
 
 async function installBot(req, res) {
   try {
@@ -93,7 +95,11 @@ async function exchangeUserInformationAgain(req, res) {
 async function integrate(req, res) {
   try {
     const integratedUser = await discord_controller.integrateUser(req.body);
-
+    const areTokensNeeded = res.locals.refreshToken ? true : false;
+    if (areTokensNeeded) {
+      await token_helper.setTokenCookie(res, res.locals.refreshToken);
+      integratedUser.jwt = res.locals.jwt;
+    }
     res.send(integratedUser);
   } catch (err) {
     console.log(err);

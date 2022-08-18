@@ -13,7 +13,6 @@ import { distinctUntilChanged, scan } from 'rxjs/operators';
  * @returns
  */
 function isHttpResponse<T>(event: HttpEvent<T>): event is HttpResponse<T> {
-
   return event.type === HttpEventType.Response;
 }
 
@@ -56,6 +55,8 @@ export function upload(): (
     event: HttpEvent<unknown>
   ): Upload => {
     if (isHttpProgressEvent(event)) {
+      console.log('Event data');
+      console.log(event);
       return {
         progress: event.total
           ? Math.round((100 * event.loaded) / event.total)

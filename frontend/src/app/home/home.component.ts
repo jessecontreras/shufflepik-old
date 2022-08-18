@@ -1,16 +1,9 @@
-import { Component, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, ViewChild, ElementRef, Input, NgZone } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { filter, take, takeUntil } from 'rxjs/operators';
-import { interval, Observable, Subject, timer } from 'rxjs';
-/*import {
-  MatSnackBar,
-  MatSnackBarVerticalPosition,
-} from '@angular/material/snack-bar';*/
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { last, map, switchMap, take } from 'rxjs/operators';
+import { from, interval, lastValueFrom, Observable, of, pipe } from 'rxjs';
 
-//import { FileSizeValidator } from '@app/_validators/file-size.validator';
-
-import { Subscription } from 'rxjs';
+//import { Subscription } from 'rxjs';
 import { Upload } from '../_helpers/upload';
 import { User } from '../_models/user.model';
 import { DialogData } from '../_models/dialog.model';
@@ -20,8 +13,8 @@ import { AccountService } from '../_services/account.service';
 import { DiscordService } from '../_services/discord.service';
 import { DialogService } from '../_services/dialog.service';
 import { ConnectivityService } from '../_services/connectivity.service';
-import { Guild } from '../_models/guild.model';
 import { SpSnackBarService } from '../_services/sp-snackbar.service';
+import { Image } from '../_models/image.model';
 
 @Component({
   selector: 'home',
@@ -38,7 +31,7 @@ export class HomeComponent {
     private dialogService: DialogService,
     private messageGenerator: WelcomeMessageGeneratorService,
     private connectivityService: ConnectivityService,
-    private router: Router
+    private ngZone: NgZone
   ) {
     //this.userSubcsription();
     this.dataConnectivitySubscription();
@@ -60,7 +53,7 @@ export class HomeComponent {
   //Form used to upload image
   uploadForm!: FormGroup;
   //Subscription for upload file
-  private fileSubscription: Subscription | undefined;
+  // private fileSubscription: Subscription | undefined;
   //Upload, variable to update us on upload progress
   upload: Upload | undefined;
   //this will be the progress bar value
@@ -78,7 +71,7 @@ export class HomeComponent {
   //Informs if user wants to move back from upload to guild sleection
   navigateToGuildSelection: boolean = false;
   //Timer value
-  timerValue: number = 2500;
+  timerValue: number = 3500;
   //Informs if guild has been selected to upload image
   selectedGuilds: Array<any> = []; //string;
   //If user is new send them a welcome message
@@ -87,6 +80,7 @@ export class HomeComponent {
   //verticalPosition: MatSnackBarVerticalPosition = 'top';
   //Is the user connected to the internet
   userHasDataConnection!: boolean;
+  snackBarClosed: boolean = true;
 
   //Upload error message enumeration
   UploadErrorMessage = {
@@ -134,7 +128,6 @@ export class HomeComponent {
   async userSubcsription() {
     try {
       this.accountService.userData$.subscribe((user) => {
-
         if (user) {
           this.currentUser = user;
           if (user.discord?.connected) {
@@ -209,27 +202,20 @@ export class HomeComponent {
   }
 
   /**
-   * Simulates progress bar. Function runs when
+   * Simulates progress bar.
    */
   async runProgressBar() {
     try {
-      this.simulateProgress = true;
       const numbers = interval(50);
-      const takeTwenty = numbers.pipe(take(20));
-      takeTwenty.subscribe(() => {
-        if (this.simulatedProgressValue <= 100) {
-          this.simulatedProgressValue += 5;
-          if (this.simulatedProgressValue == 100) {
-            this._snackBar.openSnackBar(
-              'Picture uploaded successfully',
-              'OK',
-              'done',
-              3
-            );
-            return;
-          }
-        }
-      });
+      const takeTwenty = numbers.pipe(take(16));
+
+      return await lastValueFrom(
+        takeTwenty.pipe(
+          map(() => {
+            this.simulatedProgressValue += 5;
+          })
+        )
+      );
     } catch (err) {
       console.log(err);
       throw err;
@@ -248,73 +234,50 @@ export class HomeComponent {
         this.uploadImageMessage = null;
         return;
       }
-
       const formData = await this.appendFormData();
+      //Simulated upload object (this is to show the user a progress bar ASAP)
+      this.upload = { progress: 5, state: 'PENDING' };
+      //Simulated progress value (this is to show the user a progress bar ASAP)
+      this.simulatedProgressValue = 10;
+      const res = await lastValueFrom(this.mediaService.uploadImage(formData));
+      console.log('response value:');
+      console.log(res);
 
-      //Defines when upload starts
-      let startTime = new Date().getTime();
-      //this.mediaService.uploadImage(formData);
-      //Upload service
-      this.mediaService.uploadImage(formData).subscribe(async (file) => {
-        this.upload = file;
-        if (file.http_response) {
-          if (file.http_response.errorResponse) {
-            this._snackBar
-              .openSnackBar(file.http_response.errorResponse, 'OK', 'report', 7)
-              .then(() => {
-                this.resetUpload();
-              });
-          }
-        }
-        if (this.upload.state != 'PENDING') {
-          if (file.progress > 0 && file.progress <= 25) {
-            if (new Date().getTime() - startTime <= 250) {
-              if (this.simulatedProgressValue == 0) {
-                this.simulateProgress = false;
-              }
-            }
-          }
-          if (
-            this.simulateProgress !== false //&&
-            // this.simulateProgress !== false //&&
-            //!file.http_response.errorResponse
-          ) {
-            if (file.http_response) {
-              await this.mediaService.updateAlbumSubject(
-                file.http_response.updatedImages
-              );
-
-              await this.runProgressBar();
-              //Reset upload form after enough time has passed after snackbar notification.
-              const wait = timer(this.timerValue);
-              wait.subscribe(() => {
-                this.resetUpload();
-              });
-            }
-          }
-          if (
-            this.simulateProgress === false //&&
-            // !file.http_response.errorResponse
-          ) {
-            this.simulatedProgressValue = this.upload.progress;
-            if (file.progress === 100) {
-              await this.mediaService.updateAlbumSubject(
-                file.http_response.updatedImages
-              );
-
-              this._snackBar.openSnackBar(
-                'Picture uploaded successfully',
-                'OK',
-                'done',
-                5
-              );
-              this._snackBar.onAction.subscribe((event) => {
-                this.resetUpload();
-              });
-            }
-          }
-        }
-      });
+      if (res.http_response.errorResponse) {
+        console.log('There was an error');
+        console.log(res);
+        await this._snackBar.openSnackBar(
+          res.http_response.errorResponse,
+          'OK',
+          'done',
+          5
+        );
+        await lastValueFrom(this._snackBar.onAction.pipe(take(1)));
+        this.resetUpload();
+        return;
+      } else {
+        this.upload = res;
+        console.log('aqui');
+        this.simulatedProgressValue = 20;
+        //The JWT interceprot may string the "updatedImages" from response object
+        const updatedImages = this.upload.http_response.updatedImages
+          ? this.upload.http_response.updatedImages
+          : this.upload.http_response;
+        await this.mediaService.updateAlbumSubject(
+          //  this.upload.http_response.updatedImages
+          updatedImages
+        );
+        await this.runProgressBar();
+        await this._snackBar.openSnackBar(
+          'Picture uploaded successfully',
+          'OK',
+          'done',
+          5
+        );
+        await lastValueFrom(this._snackBar.onAction.pipe(take(1)));
+        this.resetUpload();
+        return;
+      }
     } catch (err) {
       console.log(err);
     }
@@ -339,9 +302,6 @@ export class HomeComponent {
 
   async appendFormData() {
     try {
-      console.log(
-        `Appending form data, discord username is:${this.currentUser.discord.username}`
-      );
       //Form data object will be used to send image to service
       let formData = new FormData();
       //Append data
@@ -416,7 +376,6 @@ export class HomeComponent {
   }
 
   resetUpload() {
-    this.uploadForm.reset();
     this.imagePreview = false;
     this.progressComplete = false;
     this.upload = undefined;
@@ -427,6 +386,7 @@ export class HomeComponent {
     this.imgUrl = null;
     this.navigateToUpload = false;
     this.selectedGuilds = [];
+    this.uploadForm.reset();
   }
 
   /**

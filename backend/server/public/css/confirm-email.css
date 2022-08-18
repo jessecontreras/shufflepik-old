@@ -1,0 +1,111 @@
+body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  justify-items: center;
+  color: #000;
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: bold;
+  font-family: "Roboto", sans-serif;
+  background: #f4f9fc;
+  text-align: center;
+  padding: 20px;
+  /*100% minus padding and margin*/
+  width: calc(100% - 56px);
+}
+
+.header {
+  grid-area: 1/1/2/12;
+  align-self: center;
+  /*padding: 15px;*/
+}
+
+.sp-header-logo {
+  height: 45px;
+  /* height: 30%;
+        width: 100%;
+        padding: 10px 0;*/
+}
+.welcome-card {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(9, 1fr);
+  height: 100%;
+  width: 100%;
+  /* border-radius: 40px;*/
+  margin: 25px;
+  grid-area: 2/1/9/12;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  /*filter: drop-shadow(0.25rem 0.25rem 0.3rem rgba(0, 0, 0, 0.25));*/
+}
+
+.greeting {
+  background: rgb(112, 196, 227);
+  background: linear-gradient(
+    90deg,
+    rgba(112, 196, 227, 1) 0%,
+    rgba(121, 69, 197, 1) 37%,
+    rgba(78, 84, 200, 1) 100%
+  );
+  color: white;
+  grid-area: 1/1/6/12;
+  border-radius: 5px 5px 0 0;
+  padding: 20px 10px;
+}
+.greeting-message {
+  font-size: 1.75rem;
+  font-weight: bolder;
+}
+.greeting-emoji {
+  font-size: 5rem;
+  /*margin: 25px 0;*/
+  top: calc(50% - 24px - 23.24px - 20px);
+  position: relative;
+}
+.messaging {
+  border-radius: 0 0 5px 5px;
+  background: white;
+  color: black;
+  grid-area: 6/1/12/12;
+  padding: 10px;
+}
+.confirm-email-button {
+  -webkit-appearance: button;
+  -moz-appearance: button;
+  appearance: button;
+  text-decoration: none;
+  margin: 15px 0;
+  border-style: solid;
+  border-color: #66c;
+  color: white;
+  background-color: #4e54c8;
+
+  /* font-family: "Roboto", sans-serif;*/
+  font-family: inherit;
+  /*height: 47.5px;*/
+  padding: 12.75px 25px;
+  font-size: 1rem;
+  border-radius: 30px;
+}
+.footer {
+}
+
+/* (landscape phones, 576px and up)*/
+@media all and (min-width: 576px) {
+
+  .sp-header-logo {
+    height: 75px;
+  }
+  .welcome-card {
+    grid-area: 3/3/9/10;
+  }
+  .greeting-message {
+    font-size: 2.5rem;
+  }
+  .greeting-emoji {
+    font-size: 7rem;
+  }
+}

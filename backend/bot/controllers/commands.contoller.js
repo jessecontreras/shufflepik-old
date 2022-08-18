@@ -1,6 +1,9 @@
+//Local dependencies
+const { Connection } = require("../../server/helpers/mongoConnection.helper");
+
 //Controller object
 let controller = {};
-const db_controller = require("../../server/controllers/db.controller");
+//const db_controller = require("../../server/controllers/db.controller");
 const fs = require("fs-extra");
 //dayjs instance
 const dayjs = require("dayjs");
@@ -66,14 +69,11 @@ async function shufflepik(guildId, userId, gMembers = null) {
       //recurse shufflepik function, include guild members to avoid making another API call to collect members.
       return await shufflepik(guildId, userId, guildMembers);
     } else {
-      const client = await db_controller.mongo().getConnection();
-      const guildsCollection = await client
-        .db(process.env.SHUFFLEPIK_DB)
-        .collection(ShufflepikCollection.Guilds);
       //If the query returns a result then select the first (should be the only) element.
       const imageData = shufflepikQuery[0].imageData;
       //Log command usage
-      await guildsCollection.updateOne(
+
+      await Connection.db.collection(ShufflepikCollection.Guilds).updateOne(
         { "discord.id": guildId },
         {
           $push: {
@@ -135,14 +135,12 @@ async function getGuildMembers(guildId) {
  */
 async function removeUserImagesFromImagePool(userId, guildId) {
   try {
-    const client = await db_controller.mongo().getConnection();
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    guildsCollection.updateMany(
-      { "discord.id": guildId },
-      { $pull: { image_pool: { uploaded_by_discord_id: userId } } }
-    );
+    await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .updateMany(
+        { "discord.id": guildId },
+        { $pull: { image_pool: { uploaded_by_discord_id: userId } } }
+      );
     return;
   } catch (err) {
     console.log(err);
@@ -158,14 +156,10 @@ async function removeUserImagesFromImagePool(userId, guildId) {
  */
 async function getRandomImage(guildId) {
   try {
-    //Instantiate Mongo client
-    const client = await db_controller.mongo().getConnection();
-    //Sufflepik guilds collection
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    //Select a random image from guild image_pool
-    let shufflepikQuery = await guildsCollection
+    console.log("this is connection");
+    console.log(Connection);
+    let shufflepikQuery = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
       .aggregate([
         {
           $match: {
@@ -185,7 +179,7 @@ async function getRandomImage(guildId) {
           },
         },
       ])
-      .toArray(); /** SR1 */
+      .toArray();
 
     return shufflepikQuery;
   } catch (err) {
@@ -237,12 +231,8 @@ async function deleteUserAccountImages(imageLocationReferences) {
  */
 async function getImageReferences(userId, guildId) {
   try {
-    const client = await db_controller.mongo().getConnection();
-
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    const urlRefrences = await guildsCollection
+    const urlReferences = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
       .aggregate([
         {
           $match: { "discord.id": guildId },
@@ -256,7 +246,7 @@ async function getImageReferences(userId, guildId) {
       ])
       .toArray();
 
-    return urlRefrences;
+    return urlReferences;
   } catch (err) {
     console.log(err);
     throw err;
@@ -271,11 +261,8 @@ async function getImageReferences(userId, guildId) {
  */
 async function deleteUserContent(userId, guildId) {
   try {
-    const client = await db_controller.mongo().getConnection();
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    const moveToDeletedContent = await guildsCollection
+    const moveToDeletedContent = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
       .aggregate([
         {
           $match: { "discord.id": guildId },

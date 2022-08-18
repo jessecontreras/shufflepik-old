@@ -1,25 +1,30 @@
-//require("dotenv").config();
+require("dotenv").config();
+//Local dependencies
+
 //Utility module
+const { Connection } = require("../helpers/mongoConnection.helper");
+const fs = require("fs-extra");
 const _ = require("lodash");
+const path = require("path");
 
 //Third party modules
-const jwt = require("jsonwebtoken");
+//const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodeMailer = require("nodemailer");
+const Handlebars = require("handlebars");
 
 let dayjs = require("dayjs");
 //Set up our local storage mechanism
 const storage = require("node-persist");
 
-const MongoClient = require("mongodb").MongoClient;
+//const MongoClient = require("mongodb").MongoClient;
 
-//User discord controller to pull fresh discord data of user
+//Local dependencies
 const discord_controller = require("./discord.controller");
-//Database controller, where all db based queries and functions are housed.
 const db_controller = require("./db.controller");
-//Media controller
 const media_controller = require("./media.controller");
+const token_helper = require("../helpers/token.helper");
 
 const { ObjectId } = require("bson");
 const {
@@ -50,9 +55,11 @@ const Response = {
   UserDNE:
     "This user does not exist. Please contact us if you believe this is a mistake.",
   EmailOrPasswordIncorrect: " Incorrect email or password.",
+  EmailedPasswordResetLink:
+    "If the email you entered exists in our system we will send an email with password reset instructions",
   PasswordResetError:
     "Hmmm, something went wrong, we suggest having another password link sent to your email.",
-  PasswordResertSuccess: "  Successfully changed password!",
+  PasswordResetSuccess: "  Successfully changed password!",
   ValidateEmailSent:
     "Please validate your email, we've successfully sent you a validation email.",
   ValidateEmailSuccess: "email-validation-successful",
@@ -65,7 +72,7 @@ let controller = {};
 controller.authenticate = authenticate;
 controller.create = create;
 controller.update = update;
-controller.delete = _delete;
+controller.deleteAccount = _deleteAccount;
 controller.integrateUser = integrateUser;
 controller.tempUserStoreForBrokenToken = tempUserStoreForBrokenToken;
 controller.resetPassword = resetPassword;
@@ -80,33 +87,51 @@ controller.getAlbums = getAlbums;
 controller.getGuilds = getGuilds;
 controller.getImages = getImages;
 controller.getUser = getUser;
+//controller.refreshToken = refreshToken;
+controller.revokeToken = revokeToken;
 
 module.exports = controller;
 
-async function authenticate(email, password) {
+/**
+ * Set up a MongoDB connection.
+ * @returns {Promise<object>} Object with 3 properties.
+ */
+async function getMongoConnection() {
   try {
-    //Instantiate client
-    const client = await db_controller.mongo().getConnection();
+    console.log("In get Mongo connection the value of mongo in this case is:");
 
-    //Assign database and collection to our Mongo client connection
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const dbUser = await usersCollection.findOne({
-      email: email.toLowerCase(),
-    });
+    const mongo = await MongoDb.connectToMongoDb();
+    console.log(mongo.Collection);
+    return mongo.Collection;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+async function authenticate(email, password, res) {
+  try {
+    const dbUser = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({
+        email: email.toLowerCase(),
+      });
 
     if (dbUser && bcrypt.compareSync(password, dbUser.hash)) {
+      console.log("Succesfully authenticated");
+      //generate a jwt token
+      const jwtToken = await token_helper.generateJwtToken(dbUser._id); //await generateJwtToken(dbUser._id);
+      console.log("jwt is:");
+      console.log(jwtToken);
+      //generate a refreshToken
+      const refreshToken = await token_helper.generateRefreshToken();
+      res.locals.refreshToken = refreshToken;
+      //await generateRefreshToken();
+      console.log("refresh token is:");
+      console.log(refreshToken);
       //Authentication successfull return user
       let user = {
         _id: dbUser._id,
-        jwt: jwt.sign(
-          {
-            sub: dbUser._id,
-          },
-          process.env.SECRETO_DE_AMOR,
-          { expiresIn: "24h" }
-        ),
+        jwt: jwtToken,
         discord: dbUser.discord,
         email_validation: dbUser.email_validation,
         email: dbUser.email,
@@ -117,24 +142,29 @@ async function authenticate(email, password) {
       if (user.discord.connected) {
         //In the event the user needs to explicitly gain their Discord token, user info will be saved locally so that
 
-        //Decrypt a user's refresh_token
-        const refreshToken = await discord_controller.decryptRefreshToken(
-          dbUser
-        );
+        //Decrypt a user's Discord refresh_token
+        //const refreshToken
+        const discordRefreshToken =
+          await discord_controller.decryptRefreshToken(dbUser);
 
-        //Get a new access token from user
-        const userToken = await discord_controller.getUserTokenUsingRefresh(
-          refreshToken
-        );
+        //Get a new Discord access token from user
+        //const userToken
+        const discordUserToken =
+          await discord_controller.getUserTokenUsingRefresh(
+            //refreshToken
+            discordRefreshToken
+          );
 
         //If user has a valid token then process accordingly, otherwise ask client to request user permission to access Discord information.
-        if (userToken) {
+        if (discordUserToken) {
           //Get the latest Discord user info
-          const latestUser = await discord_controller.getDiscordUser(userToken);
+          const latestUser = await discord_controller.getDiscordUser(
+            discordUserToken
+          );
 
           //Get the latest Discord guild info
           const latestUserGuilds = await discord_controller.getUserGuilds(
-            userToken
+            discordUserToken
           );
 
           //discord guild icons are referenced as so: https://cdn.discordapp.com/icons/guild_id/guild_icon.png
@@ -144,25 +174,27 @@ async function authenticate(email, password) {
           //Assign updated username to user.
           user.discord.username = latestUser.username;
           //update a user's token value
-          dbUser.discord.token = userToken.refresh_token;
+          dbUser.discord.token = discordUserToken.refresh_token; //userToken.refresh_token;
           //Discord is disconnected
           //encrypt a user's refresh_token
-          const token = await discord_controller.encryptRefreshToken(dbUser);
+          //const discordToken = await discord_controller.encryptRefreshToken(dbUser);
+          const discordToken = await discord_controller.encryptRefreshToken(
+            dbUser
+          );
+          console.log("Refresh token is");
+          console.log(refreshToken);
           //A user object, this will only update certain discord properties in our DB User object
           dataToUpdate = {
             id: dbUser._id,
-            token: token,
+            token: discordToken,
             guilds: latestUserGuilds,
             avatar: userAvatar,
             connected: true,
             username: user.discord.username,
+            refresh_token: refreshToken,
           };
           //Update information on database, we need to do this to query against guilds that exist on Shufflepik and also to store the necessary refresh_token.
-          const updatedUser = await updateDiscordDataOnLogin(
-            dataToUpdate
-          ); /*await db_controller.updateUserOnLogin(
-            dataToUpdate
-          );*/
+          const updatedUser = await updateDataOnLogin(dataToUpdate);
 
           //Get shufflepik guilds
           const shufflepikGuilds = await db_controller.getAllGuilds();
@@ -177,23 +209,36 @@ async function authenticate(email, password) {
           user.discord.guilds = userGuildsAndAlbums.guilds;
           //Assign user albums to user;
           user.albums = userGuildsAndAlbums.albums;
+
           //remove a user's token from discord object
-          user = _.omit(user, "discord.token");
+          user = _.omit(user, ["discord.token", "revoked_tokens"]);
+
+          return user;
         } else {
-          await usersCollection.updateOne(
-            { _id: user._id },
-            { $set: { "discord.token": null } }
-          );
+          await Connection.db
+            .collection(ShufflepikCollection.Users)
+            .updateOne(
+              { _id: new ObjectId(user._id) },
+              { $set: { "discord.token": null, refresh_token: refreshToken } }
+            );
           //update the fact that user is no longer connected to Discord
           user.discord.connected = false;
           //user.discord_connected = false;
           user.discord.need_token_refresh = true;
 
-          //user.need_token_refresh = true;
+          //Return user
           return user;
         }
-      }
-      //If user is not connected nor if they need to refresh token then return user.
+      } //end if user.discord.connected
+      //update refresh token value
+
+      await Connection.db
+        .collection(ShufflepikCollection.Users)
+        .updateOne(
+          { _id: new ObjectId(user._id) },
+          { $set: { refresh_token: refreshToken } }
+        );
+
       return user;
     } else {
       return { serverErrorMessage: Response.EmailOrPasswordIncorrect };
@@ -204,20 +249,44 @@ async function authenticate(email, password) {
   }
 }
 
+/**
+ * Revokes token, saves revoked token in user's revoked_token property (in DB).
+ *
+ * @param {string} userId Shufflepik user id.
+ * @returns {Promise<void>}
+ */
+async function revokeToken(userId) {
+  try {
+    //Instantiate mongo client
+
+    const refreshToken = await token_helper.getRefreshToken(userId); //await getRefreshToken(userId);
+
+    if (!refreshToken) return false;
+    //revoke token and save
+    refreshToken.revoked = dayjs().format(); //Date.now();
+    //update a user's array of revoked tokens
+
+    const revokedToken = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .updateOne(
+        { _id: ObjectId(userId) },
+        { $push: { revoked_tokens: { $each: [refreshToken], $slice: -96 } } },
+        { upsert: true }
+      );
+    console.log("revoked token is:");
+    console.log(revokedToken);
+    return;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
 async function validateEmail(token) {
   try {
-    //const client = await db_controller.instantiateMongoClient();
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
-
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-
-    const user = await usersCollection.findOne({
-      "email_validation.token": token,
-    });
+    const user = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({ "email_validation.token": token });
 
     if (!user) {
       errorResponse = new URLSearchParams({
@@ -237,26 +306,25 @@ async function validateEmail(token) {
       return `${process.env.CLIENT_PATH}/${errorResponse}`;
     }
 
-    const updateConfirmation = await usersCollection.findOneAndUpdate(
-      {
-        _id: ObjectId(user._id),
-      },
-      {
-        $set: {
-          email_validation: {
-            validated: true,
-            date_validated: new Date(Date.now()).toISOString(),
-          },
+    const updateConfirmation = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOneAndUpdate(
+        {
+          _id: new ObjectId(user._id),
         },
-      }
-    );
+        {
+          $set: {
+            email_validation: {
+              validated: true,
+              date_validated: new Date(Date.now()).toISOString(),
+            },
+          },
+        }
+      );
 
-    /*successResponse = new URLSearchParams({
-      validateEmailSuccess: Response.ValidateEmailSuccess,
-    });*/
     successResponse = `${process.env.CLIENT_PATH}/${Response.ValidateEmailSuccess}`;
 
-    return successResponse; //`${process.env.CLIENT_PATH}/${successResponse}`;
+    return successResponse;
   } catch (err) {
     console.log(err);
     throw err;
@@ -311,18 +379,15 @@ async function tempUserStoreForBrokenToken(code) {
  */
 async function getUser(_id) {
   try {
-    const client = await db_controller.mongo().getConnection();
-
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-
-    let user = await usersCollection.findOne(
-      {
-        _id: ObjectId(_id),
-      },
-      { _id: 1, discord: 1, email: 1, email_validation: 1 }
-    );
+    //let user = Users.findOne(
+    let user = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne(
+        {
+          _id: ObjectId(_id),
+        },
+        { _id: 1, discord: 1, email: 1, email_validation: 1 }
+      );
     //let userToReturn = user;
     //Set User object to userParam without the plaintext password
 
@@ -397,16 +462,10 @@ async function processUserWithTokenIssue(userData) {
   try {
     //Initialize localStorage
     await initLocalStorage();
-    //Connect Mongo client.
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
 
-    //Assign database and collection to our Mongo client connection
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const dbUser = await usersCollection.findOne({ _id: userData._id });
+    const dbUser = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({ _id: userData._id });
     //Get user from local storage
     const user = await storage.valuesWithKeyMatch(userID.data);
   } catch (err) {
@@ -421,41 +480,38 @@ async function processUserWithTokenIssue(userData) {
  * @param {object} user An object with a user's encrypted discord refresh token, their SP id, and their guilds.  {id: string, token: {}, guilds: []}
  * @returns updated user in the collection.
  */
-async function updateDiscordDataOnLogin(user) {
+async function updateDataOnLogin(user) {
   try {
-    //Instantiate client
-    const client = await db_controller.mongo().getConnection();
-
-    //Assign database and collection to our Mongo client connection
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-
-    const updatedUser = await usersCollection.findOneAndUpdate(
-      {
-        _id: ObjectId(user.id),
-      },
-      {
-        $set: {
-          "discord.token": user.token,
-          "discord.guilds": user.guilds,
-          "discord.avatar": user.avatar,
-          "discord.connected": user.connected,
-          "discord.username": user.username,
+    const updatedUser = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOneAndUpdate(
+        {
+          _id: ObjectId(user.id),
         },
-        $inc: {
-          "login.number_of_logins": 1,
+        {
+          $set: {
+            refresh_token: user.refresh_token,
+            "discord.token": user.token,
+            "discord.guilds": user.guilds,
+            "discord.avatar": user.avatar,
+            "discord.connected": user.connected,
+            "discord.username": user.username,
+          },
+          $inc: {
+            "login.number_of_logins": 1,
+          },
+          $push: {
+            "login.dates": {
+              $each: [new Date(Date.now()).toISOString()],
+              $slice: 1000,
+            },
+          },
         },
-
-        $push: {
-          "login.dates": new Date(Date.now()).toISOString(),
-        },
-      },
-      {
-        returnNewDocument: true,
-        returnOriginal: false,
-      }
-    );
+        {
+          returnNewDocument: true,
+          returnOriginal: false,
+        }
+      );
     return updatedUser.value;
   } catch (err) {
     console.log(err);
@@ -471,7 +527,7 @@ async function updateDiscordDataOnLogin(user) {
  */
 async function updateDiscordGuilds(user) {
   try {
-    await usersCollection.findOneAndUpdate(
+    await Connection.db.collection(ShufflepikCollection.Users).findOneAndUpdate(
       {
         _id: ObjectId(user.id),
       },
@@ -497,28 +553,23 @@ async function updateDiscordGuilds(user) {
  */
 async function updateDiscordData(user) {
   try {
-    //Instantiate client
-    const client = await db_controller.mongo().getConnection();
-
-    //Assign database and collection to our Mongo client connection
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const updatedUser = await usersCollection.findOneAndUpdate(
-      {
-        _id: ObjectId(user.id),
-      },
-      {
-        $set: {
-          "discord.token": user.token,
-          "discord.guilds": user.guilds,
+    const updatedUser = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOneAndUpdate(
+        {
+          _id: ObjectId(user.id),
         },
-      },
-      {
-        returnDocument: true,
-        returnOriginal: false,
-      }
-    );
+        {
+          $set: {
+            "discord.token": user.token,
+            "discord.guilds": user.guilds,
+          },
+        },
+        {
+          returnDocument: true,
+          returnOriginal: false,
+        }
+      );
 
     return updatedUser.value;
   } catch (err) {
@@ -536,7 +587,8 @@ async function updateDiscordData(user) {
  */
 async function getGuildIntersect(collection, userID) {
   try {
-    const intersectingGuilds = await collection
+    const intersectingGuilds = await Connection.db
+      .collection(ShufflepikCollection.Users)
       .aggregate([
         {
           $lookup: {
@@ -575,14 +627,11 @@ async function getGuildIntersect(collection, userID) {
  */
 async function getGuilds(_id) {
   try {
-    const client = await db_controller.mongo().getConnection();
-
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const user = await usersCollection.findOne({
-      _id: ObjectId(_id),
-    });
+    const user = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({
+        _id: ObjectId(_id),
+      });
     if (user.discord.connected) {
       //Decrypt a user's refresh_token
       const refreshToken = await discord_controller.decryptRefreshToken(user);
@@ -637,16 +686,14 @@ async function getGuilds(_id) {
 /**
  * Gets a user's photo albums.
  * @param {string} _id String representation of a user's object id.
- * @returns {Album[]} An array of user albums.
+ * @returns {Promise<Album[]>} An array of user albums.
  */
 async function getAlbums(_id) {
   try {
-    const client = await db_controller.mongo().getConnection();
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
+    console.log("Get albums controller");
 
-    const albums = await usersCollection
+    const albums = await Connection.db
+      .collection(ShufflepikCollection.Users)
       .aggregate([
         {
           $lookup: {
@@ -702,12 +749,8 @@ async function getAlbums(_id) {
  */
 async function getImages(_id, albumId) {
   try {
-    const client = await db_controller.mongo().getConnection();
-
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const albums = await usersCollection
+    const albums = await Connection.db
+      .collection(ShufflepikCollection.Users)
       .aggregate([
         {
           $lookup: {
@@ -757,45 +800,44 @@ async function getImages(_id, albumId) {
   }
 }
 
-async function integrateUser(req, res) {
+/**
+ * Integrates a Discord user with Shufflepik.
+ *
+ * @param {object} req Reference to the expressjs request object. (Contains data property which is used to get user information from a local directory)
+ * @param {object} res Reference to the expressjs response object.
+ * @returns {Promise<object|string>} Object with user data if user is not integrated. String error message if user is already integrated.
+ */
+async function integrateUser(req) {
   try {
-    //Mongo client instance
-    const client = await db_controller.mongo().getConnection();
-    //Users collection
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
+    console.log("In integrate user");
+
     //if so respond with message stating they can only have one sp account per discord user.
     //Get our user information saved locally
     let userToIntegrate = await storage.valuesWithKeyMatch(req.data);
     //Local storage (node-persist) returns a single object array, we're simply referencing the object here.
     userToIntegrate = userToIntegrate[0];
 
-    //Check if a user exists, if so return false, otherwise continue integration operations
-    const userExists = await collection.findOne({
-      "discord.id": userToIntegrate.discord.id,
-    });
+    const userExists = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({
+        "discord.id": userToIntegrate.discord.id,
+      });
 
-    if (
-      userExists &&
-      userExists.discord.connected &&
-      userExists.discord.token
-    ) {
+    if (userExists && userExists.discord.connected && userExists.discord.token)
       return { duplicateUserError: Response.UserToIntegrateAlreadyConnected };
-    }
+
     //The last four characters of 'data' value should be user's discriminator, if not return. We do this just to check, at a cursory level, that data has not been tampered with.
     const userDiscriminator = req.data.substring(0, 4);
     if (userDiscriminator == userToIntegrate.discord.discriminator) {
       //Encrypt a user's refresh_token
       const token = await encryptRefreshToken(userToIntegrate);
-      //Update user's token value
       userToIntegrate.discord.token = token;
-
       userToIntegrate.discord.date_integrated = new Date(
         Date.now()
       ).toISOString();
+
       //Update the user in Database
-      const updatedUser = await db_controller.updateUserByID(
+      const updatedUser = await db_controller.updateUserById(
         req.id,
         userToIntegrate
       );
@@ -811,14 +853,10 @@ async function integrateUser(req, res) {
         updatedUser.discord.guilds,
         shufflepikGuilds
       );
+      const jwtToken = await token_helper.generateJwtToken(updatedUser._id); //await generateJwtToken(updatedUser._id);
       const user = {
         _id: updatedUser._id,
-        jwt: jwt.sign(
-          {
-            sub: updatedUser._id,
-          },
-          process.env.SECRETO_DE_AMOR
-        ),
+        jwt: jwtToken,
         discord: {
           connected: true,
           guilds: guildAndAlbumData.guilds,
@@ -829,6 +867,8 @@ async function integrateUser(req, res) {
         albums: guildAndAlbumData.albums,
         email: updatedUser.email,
       };
+      console.log("User is:");
+      console.log(user);
 
       //Remove user from local storage
       //await storage.removeItem(req.data)
@@ -991,24 +1031,20 @@ async function getIntersectingGuildsAndUserAlbums(
 }
 
 /**
- * Creates user
- * @param { User } userParam User object.
- * @returns Message, either a 'user created' message or a 'user already exists' message.
+ * Create User.
+ *
+ * @param {object} userParam User object
+ * @returns {Promise<string>} A success or error message
  */
 async function create(userParam) {
   //Create a client instance and assign to const client
-  const client = await db_controller.mongo().getConnection();
-
+  //const client = await db_controller.mongo().getConnection();
   try {
-    //Connect Mongo client.
-    //Assign database and collection to our Mongo client connection
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    //Search for user in collection
-    const user = await collection.findOne({
-      email: userParam.email.toLowerCase(),
-    });
+    const user = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({
+        email: userParam.email.toLowerCase(),
+      });
 
     //create a login object that keeps track of a user's login activity
     login = {
@@ -1042,17 +1078,19 @@ async function create(userParam) {
         const discordObj = {
           connected: false,
         };
-
+        // const refreshToken = await token_helper.generateRefreshToken();
+        //user.refresh_token = refreshToken;
+        //res.locals.refreshToken = refreshToken;
         //Since user is just being created, their discord cannot be connected to Shufflepik
-        //user.discord_connected = false;
         user.discord = discordObj;
         user.login = login;
         user.email_validation = emailValidation;
 
-        //user.email_validation = emailValidation;
-
         //Insert user to database
-        await collection.insertOne(user);
+        // await collection.insertOne(user);
+        await Connection.db
+          .collection(ShufflepikCollection.Users)
+          .insertOne(user);
       } catch (err) {
         console.log(err);
         throw err;
@@ -1067,21 +1105,13 @@ async function create(userParam) {
 /**
  * Prepares and sends a validation link to the user's email corresponding to user _id passed.
  * @param {string} _id Shufflepik user id.
- * @returns {Promise} Promise object contains a string message.
+ * @returns {Promise<string>} Promise object containing a message.
  */
 async function sendEmailValidationLink(_id) {
   try {
-    //const client = await db_controller.instantiateMongoClient();
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
-
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const user = await usersCollection.findOne({
-      _id: ObjectId(_id),
-    });
+    const user = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({ _id: ObjectId(_id) });
     if (!user) {
       return Response.UserDNE;
     }
@@ -1089,7 +1119,7 @@ async function sendEmailValidationLink(_id) {
     //This does the acutal sending of the email validation link
     const emailValidation = await emailValidationLink(email);
 
-    await usersCollection.updateOne(
+    await Connection.db.collection(ShufflepikCollection.Users).updateOne(
       {
         email: user.email,
       },
@@ -1109,7 +1139,7 @@ async function sendEmailValidationLink(_id) {
  * Sends user a email validation link. Also creates an email validation object.
  *
  * @param {string} email  User's email
- * @returns {Promise} Promise object represents email validation object. This has email validation details necessary to properly know if a user's email has been validated.
+ * @returns {Promise<object>} Promise object represents email validation object. This has email validation details necessary to properly know if a user's email has been validated.
  */
 async function emailValidationLink(email) {
   try {
@@ -1130,25 +1160,36 @@ async function emailValidationLink(email) {
 
     let emailService = await getEmailServiceDetails();
 
+    const emailTemplateLoc = fs.readFileSync(
+      path.join(process.cwd(), "/templates/mailers/confirm-email.hbs"),
+      "utf8"
+    );
+    const template = Handlebars.compile(emailTemplateLoc);
     const valTok = new URLSearchParams({
       validation_token: validatonToken,
     });
+    const locals = `${process.env.API_PATH}/users/ve?${valTok}`;
+    console.log(`Locals should be: ${locals}`);
 
     const emailOptions = {
       to: email,
       from: '"Shufflepik" <no-reply@shufflepik.com>',
-      subject: "Please validate email for Shufflepik",
-      html: `
+      subject: "Please confirm email.",
+      html: template({ confirmationEmailLink: locals }),
+    };
+
+    /**
+     * html: `
             <h2>Welcome to Shufflepik!</h2>
-            <h3>We're really excited to welcome you to Shufflepik. Click the link below to verify your email address.\n</h3>
-            <p><a href="${process.env.API_PATH}/users/ve?${valTok}">Click here to verify\n</a></p>
+            <h3>We're really excited to welcome you to Shufflepik. Click the link below to confirm your email address.\n</h3>
+            <p><a href="${process.env.API_PATH}/users/ve?${valTok}">Click here to confirm\n</a></p>
             <p>By validating your email you will be able to uploads pictures and memes.</p> 
             <p>If you did not initiate this request please contact us directly, however you can ignore this request as this link will expire after some time.<p>
             <p>Thanks again for signing up with us, we are so stoked to have you on Shufflepik!</p>
             <br>
             <small>Please do not reply to this message. We've sent it from a notification-only address, no one will see a reply. If you need help contact us directly <a href="mailto:support@shufflepik.com" target="_blank">support@shufflepik.com</a></small>
           `,
-    };
+     */
 
     await emailService.sendMail(emailOptions);
 
@@ -1162,7 +1203,7 @@ async function emailValidationLink(email) {
 /**
  * Sets up and returns Nodemailer service and authorization details.
  *
- * @returns Nodemailer createTransport object
+ * @returns {Promise<object>} Nodemailer createTransport object
  */
 async function getEmailServiceDetails() {
   try {
@@ -1184,27 +1225,25 @@ async function getEmailServiceDetails() {
 }
 
 async function update(_id) {}
-async function _delete(_id) {
+/**
+ * Delete user account.
+ *
+ * @param {string} _id Shufflepik user id
+ * @returns {Promise<void>}
+ */
+async function _deleteAccount(_id) {
   try {
-    const client = await db_controller.mongo().getConnection();
+    const deletedUserResponse = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOneAndDelete({
+        _id: ObjectId(_id),
+      });
 
-    const usersCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-
-    const deleteUserResponse = await usersCollection.findOneAndDelete({
-      _id: ObjectId(_id),
-    });
-
-    const deletedUser = deleteUserResponse.value;
+    const deletedUser = deletedUserResponse.value;
     console.log(deletedUser);
 
     if (deletedUser) {
-      const deletedUsersCollection = client
-        .db(process.env.SHUFFLEPIK_DB)
-        .collection(ShufflepikCollection.DeletedUsers);
-
-      await deletedUsersCollection.updateOne(
+      await Connection.db.collection(ShufflepikCollection.Users).updateOne(
         { _id: ObjectId(_id) },
         {
           $set: deletedUser,
@@ -1221,7 +1260,9 @@ async function _delete(_id) {
 
       //Contains content moved from active collection to inactive (deleted) collection.
       await deleteUserContent(deletedUser._id);
-      await deleteUserImagesFromImagePools(deletedUser);
+      //Don't call this if there are no images to delete
+      if (urlReferences.length <= 0)
+        await deleteUserImagesFromImagePools(deletedUser);
       //TODO use url references to move
 
       await media_controller.deleteUserAccountImages(urlReferences);
@@ -1247,15 +1288,8 @@ async function _delete(_id) {
 async function handleMongoDuplicateKey(deletedUser) {
   try {
     const userToDelete = _.omit(deletedUser, "date_deleted");
-    //const collection = await mongoCollection(ShufflepikCollection.DeletedUsers);
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
 
-    const deletedUsersCollection = await client.db.collection(
-      ShufflepikCollection.DeletedUsers
-    );
-
-    await deletedUsersCollection.updateOne(
+    await Connection.db.collection(ShufflepikCollection.DeletedUsers).updateOne(
       {
         _id: ObjectId(userToDelete._id),
       },
@@ -1278,18 +1312,10 @@ async function handleMongoDuplicateKey(deletedUser) {
 async function deleteUserImagesFromImagePools(user) {
   try {
     const userId = user._id.toString();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
 
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    //const guildsCollection = await mongoCollection(ShufflepikCollection.Guilds);
-    //Pull images from image pools
-    const pullImageResults = await guildsCollection.updateMany(
-      {},
-      { $pull: { image_pool: { uploaded_by_id: userId } } }
-    );
+    const pullImageResults = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .updateMany({}, { $pull: { image_pool: { uploaded_by_id: userId } } });
     return;
   } catch (err) {
     console.log(err);
@@ -1303,13 +1329,8 @@ async function deleteUserImagesFromImagePools(user) {
  */
 async function deleteUserContent(userId) {
   try {
-    const client = await db_controller.mongo().getConnection();
-
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    // const guildsCollection = await mongoCollection(ShufflepikCollection.Guilds);
-    const deletedUserContent = await guildsCollection
+    const deletedUserContent = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
       .aggregate([
         {
           $project: {
@@ -1398,15 +1419,10 @@ async function deleteUserContent(userId) {
           },
         },
         {
-          $merge: "DELETED_CONTENT" /* {
-            into: "DELETED_CONTENT",
-            on: "_id",
-            whenMatched: "replace",
-            whenNotMatched: "insert",
-          },*/,
+          $merge: "DELETED_CONTENT",
         },
       ])
-      .toArray(); //~SP1~//
+      .toArray(); //~SP1~// */
 
     return;
   } catch (err) {
@@ -1422,12 +1438,8 @@ async function deleteUserContent(userId) {
  */
 async function getDeletedUserImageReferences(shufflepikUserId) {
   try {
-    const client = await db_controller.mongo().getConnection();
-
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    const urlRefrences = await guildsCollection
+    const urlReferences = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
       .aggregate([
         {
           $match: { "image_pool.uploaded_by_id": shufflepikUserId.toString() },
@@ -1440,32 +1452,7 @@ async function getDeletedUserImageReferences(shufflepikUserId) {
       ])
       .toArray();
 
-    return urlRefrences;
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}
-
-/**
- * Creates a collection instance.
- *
- * @param {*} client
- * @returns Instance of collection to be queried.
- */
-async function mongoCollection(collectionName) {
-  try {
-    /*const client = new MongoClient(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    await client.connect();
-    const collectionInstance = client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(collectionName);
-
-    return collectionInstance;*/
+    return urlReferences;
   } catch (err) {
     console.log(err);
     throw err;
@@ -1494,28 +1481,19 @@ async function instantiateMongoClient() {
  * 
  * @param {object} email - User email.
 
- * @returns 
+ * @returns {Promise<string>} Generic string response, "you got your stuff".
  */
 async function emailResetPasswordLink(email) {
   try {
+    console.log("made it here");
     //Check if user exists using function from our database controller
     const user = await db_controller.getUserByEmail(email.toLowerCase());
     //If user does not exists return. Provide no extra context to prevent email enumeration.
     if (!user) {
-      return;
+      return Response.EmailedPasswordResetLink;
     }
     const userEmail = email;
-    //Create an instance of Mongo Client
-    //const client = await db_controller.instantiateMongoClient();
-    //Connect client
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
 
-    //Assign database and collection to our Mongo client connection
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
     //Create a random reset token value
     const resetToken = `${Date.now().toString()}${crypto
       .randomBytes(16)
@@ -1531,7 +1509,8 @@ async function emailResetPasswordLink(email) {
       used: false,
     };
     //Update our current collection with password reset object
-    await collection.updateOne(
+
+    await Connection.db.collection(ShufflepikCollection.Users).updateOne(
       { email: userEmail },
       {
         $set: { password_reset: passwordReset },
@@ -1539,19 +1518,24 @@ async function emailResetPasswordLink(email) {
     );
 
     let emailService = await getEmailServiceDetails();
-
+    const emailTemplateLoc = fs.readFileSync(
+      path.join(process.cwd(), "/templates/mailers/reset-password.hbs"),
+      "utf8"
+    );
     const resTok = new URLSearchParams({
       reset_token: resetToken,
     });
+    const locals = `${process.env.API_PATH}/users/password-reset?${resTok}`;
+    const template = Handlebars.compile(emailTemplateLoc);
 
     const emailOptions = {
       to: userEmail,
       from: '"Shufflepik" <no-reply@shufflepik.com>',
       subject: "Shufflepik password reset",
-      html: `
+      html: template({ resetPasswordLink: locals }) /*`
             
             <h3>You are receiving this because you, or someone else, have requested the reset of the password associated with this account.\n
-            Please click on the following link: <a href="${process.env.API_PATH}/users/send-password-reset?${resTok}">Reset Password</a></h3>\n\n
+            Please click on the following link: <a href="${process.env.API_PATH}/users/password-reset?${resTok}">Reset Password</a></h3>\n\n
             
             <p>The link will expire after 24 hours.</p>
 
@@ -1559,12 +1543,12 @@ async function emailResetPasswordLink(email) {
             been compromised.</p>
             <br>
             <small>Please do not reply to this message. We've sent it from a notification-only address, no one will see a reply. If you need help contact us directly <a href="mailto:support@shufflepik.com" target="_blank">support@shufflepik.com</a></small>
-            `,
+            `,*/,
     };
 
     await emailService.sendMail(emailOptions);
 
-    return;
+    return Response.EmailedPasswordResetLink;
   } catch (err) {
     console.log(err);
     throw err;
@@ -1576,28 +1560,27 @@ async function resetPassword(token, password) {
     const isTokenValid = await validatePasswordResetToken(token);
     if (isTokenValid) {
       const user = isTokenValid;
-      const client = await db_controller.mongo().getConnection();
 
-      const usersCollection = await client
-        .db(process.env.SHUFFLEPIK_DB)
-        .collection(ShufflepikCollection.Users);
       const userHash = bcrypt.hashSync(password, 10);
-      const updatePassword = await usersCollection.findOneAndUpdate(
-        {
-          _id: ObjectId(user._id),
-        },
-        {
-          $set: {
-            hash: userHash,
-            password_reset: {
-              token: user.password_reset.token,
-              expiration: user.password_reset.expiration,
-              used: true,
-            },
+
+      await Connection.db
+        .collection(ShufflepikCollection.Users)
+        .findOneAndUpdate(
+          {
+            _id: new ObjectId(user._id),
           },
-        }
-      );
-      return Response.PasswordResertSuccess;
+          {
+            $set: {
+              hash: userHash,
+              password_reset: {
+                token: user.password_reset.token,
+                expiration: user.password_reset.expiration,
+                used: true,
+              },
+            },
+          }
+        );
+      return Response.PasswordResetSuccess;
     } else {
       return Response.PasswordResetError;
     }
@@ -1613,7 +1596,9 @@ async function sendPasswordResetPage(token) {
     if (!account) {
       return Response.PasswordResetError;
     }
-    return `${process.env.CLIENT_PATH}/reset-password/${token}`;
+
+    return token;
+    //return `${process.env.CLIENT_PATH}/reset-password/${token}`;
   } catch (err) {
     console.log(err);
     throw err;
@@ -1626,16 +1611,9 @@ async function sendPasswordResetPage(token) {
  */
 async function validatePasswordResetToken(token) {
   try {
-    //const client = await db_controller.instantiateMongoClient();
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const account = await collection.findOne({
-      "password_reset.token": token,
-    });
+    const account = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({ "password_reset.token": token });
 
     //If account doesn't exist, return.
     if (!account) {

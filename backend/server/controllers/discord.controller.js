@@ -1,10 +1,10 @@
+//Local dependencies
+const { Connection } = require("../helpers/mongoConnection.helper");
 //Controller object
 let controller = {};
 //Third party modules
 let dayjs = require("dayjs");
-
 let jwt = require("jsonwebtoken");
-
 //Module that allows for window.fetch to Node.js
 const fetch = require("node-fetch");
 //Crypto to generate random bytes/bits
@@ -14,6 +14,7 @@ const ShufflepikCollection = {
   Users: "USERS",
   Guilds: "GUILDS",
 };
+
 //Set up our local storage mechanism
 const storage = require("node-persist");
 //Database controller, where all db based queries and functions are housed.
@@ -50,23 +51,15 @@ module.exports = controller;
  * @returns
  */
 async function connect(guildInfo) {
-  //the dafuq bitch what the f are you fing for after me there hsould be no more something something need me to roll
   //Create a client instance and assign to const client
   //const client = await db_controller.instantiateMongoClient();
   //instantiateMongoClient();
   try {
-    //Connect Mongo client.
-    //await client.connect();
-    //const client = await db_controller.clientPromise();
-    const client = await db_controller.mongo().getConnection();
-
-    //Assign database and collection to our Mongo client connection, in this case our Guilds collection.
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    const guild = await collection.findOne({
-      guild_id: guildInfo.id,
-    });
+    const guild = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .findOne({
+        guild_id: guildInfo.id,
+      });
     //If guild exists, return 'error' message
     //Else create user and return 'success' message
     if (guild) {
@@ -87,7 +80,10 @@ async function connect(guildInfo) {
           image_pool: [],
         };
         //Insert user into database
-        await collection.insertOne(botGuild);
+
+        await Connection.db
+          .collection(ShufflepikCollection.Guilds)
+          .insertOne(botGuild);
         //Check if user exists in DB, if so update guilds otherwise leave as is:
         return;
       } catch (err) {
@@ -100,7 +96,7 @@ async function connect(guildInfo) {
     throw err;
   } finally {
     //Clost Mongo client connection
-    await client.close();
+    // await client.close();
   }
 }
 
@@ -112,19 +108,12 @@ async function installBot(req, res) {
     const tokenObject = await getBotToken(req.code);
     //User object
     let discordUser = await getDiscordUser(tokenObject);
-    //Connect Mongo client.
-    //await client.connect();
-    //const client = await db_controller.clientPromise()
-    const client = await db_controller.mongo().getConnection();
 
-    //Assign database and collection to our Mongo client connection, in this case our Guilds collection.
-    const shufflepikCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    //Find an existing guild in DB
-    const guild = await shufflepikCollection.findOne({
-      "discord.id": tokenObject.guild_info.id,
-    });
+    const guild = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .findOne({
+        "discord.id": tokenObject.guild_info.id,
+      });
 
     if (guild) {
       return Response.ExistingGuild;
@@ -145,7 +134,8 @@ async function installBot(req, res) {
           name: tokenObject.guild_info.name,
         },
       };
-      const result = await shufflepikCollection.insertOne(shufflepikGuild);
+      /*const result = await shufflepikCollection.insertOne(shufflepikGuild);*/
+      const result = await Guilds.insertOne(shufflepikGuild);
       return Response.Success;
     }
   } catch (err) {

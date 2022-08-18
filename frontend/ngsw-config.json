@@ -12,9 +12,12 @@
         "/apis/discord/xchange-info",
         "/apis/discord/xchange-info-again",
         "/apis/discord/install",
+        "/apis/users/forgot-password",
         "/apis/users/*images*/**",
-        "/apis/users/*password*/**",
-        "/apis/users/*email*/**"
+        "/apis/users/password-reset",
+        "/apis/users/reset-password",
+        "/apis/users/**/*password*/**",
+        "/apis/users/**/*email*/**"
       ],
       "cacheConfig": {
         "maxSize": 0,
@@ -31,7 +34,7 @@
       ],
       "cacheConfig": {
         "maxSize": 25,
-        "maxAge": "120s",
+        "maxAge": "150s",
         "timeout": "900u",
         "strategy": "freshness"
       }

@@ -73,12 +73,7 @@ export class ForgotPasswordComponent implements OnInit {
           verticalPosition: 'top',
         }
       );*/
-      this._snackBar.openSnackBar(
-        'If the email you entered exists we wills end an email with password reset instructions',
-        'OK',
-        'mail',
-        5
-      );
+      this._snackBar.openSnackBar(response.toString(), 'OK', 'mail', 5);
       //Set submit flag back to false
       this.submitted = false;
       //Reset input field.

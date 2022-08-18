@@ -33,6 +33,7 @@ import { ParseDatePipe } from './_pipes/parse-date.pipe';
 import { FormatDatePipe } from './_pipes/format-date.pipe';
 import { FaqComponent } from './faq/faq.component';
 import { EmailValidationSuccessfulComponent } from './email-validation-successful/email-validation-successful.component';
+import { LazyImgLoadDirective } from './_directives/lazy-img-load.directive';
 @NgModule({
   declarations: [
     AppComponent,
@@ -58,7 +59,7 @@ import { EmailValidationSuccessfulComponent } from './email-validation-successfu
     FormatDatePipe,
     FaqComponent,
     EmailValidationSuccessfulComponent,
-
+    LazyImgLoadDirective,
   ],
   imports: [
     BrowserModule,
@@ -68,13 +69,13 @@ import { EmailValidationSuccessfulComponent } from './email-validation-successfu
     FormsModule,
     ReactiveFormsModule,
     HttpClientModule,
-    RouterModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000',
     }),
+    RouterModule,
   ],
   providers: [httpInterceptorProviders],
   bootstrap: [AppComponent],

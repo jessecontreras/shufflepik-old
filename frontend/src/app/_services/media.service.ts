@@ -126,12 +126,19 @@ export class MediaService {
         }),
         body: imageData,
       };
-
-      const deletedImage = await lastValueFrom(
+      //Delete image from backend
+      let imageToBeDeleted: any = await lastValueFrom(
         this.http.delete(`${environment.apiUrl}/media/image`, options)
       );
-
-      const deletedImageIndex = await this.removeImageFromAlbum(deletedImage);
+      console.log('Should have made it back from backend deleted pic');
+      console.log(imageToBeDeleted);
+      //Jwt interceptor sometimes modifies the structure of the deletedImage so we check to see if there's an embedded object in response, assign variable accordingly
+      imageToBeDeleted = imageToBeDeleted.deletedImage
+        ? imageToBeDeleted.deletedImage
+        : imageToBeDeleted;
+      const deletedImageIndex = await this.removeImageFromAlbum(
+        imageToBeDeleted
+      );
 
       return deletedImageIndex;
     } catch (err) {
@@ -176,7 +183,7 @@ export class MediaService {
       this.userSubject.value.albums = this.albums;
       localStorage.setItem('user', JSON.stringify(this.userSubject.value));
       this.userSubject.next(this.userSubject.value);
-
+      //console.log()
       return indexOfDeletedImage;
     } catch (err) {
       console.log(err);
@@ -185,13 +192,15 @@ export class MediaService {
   }
 
   /**
-   * Updates Album Subject of a newly and corresponding image upload.
+   * Updates Album Subject of a new image upload.
    *
    * @param imageData An array of objects, an object is made of an image url and an image title.
    * @returns
    */
   async updateAlbumSubject(imageData: Image[]) {
     try {
+      console.log('Update album subject ');
+      console.log(imageData);
       const albums = this.albums ? this.albums : [];
 
       for (let i = 0; i < imageData.length; i++) {

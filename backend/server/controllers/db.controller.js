@@ -1,76 +1,13 @@
-let dayjs = require("dayjs");
-
-//Mongo client
-const MongoClient = require("mongodb").MongoClient;
+//Local dependencies
+const { Connection } = require("../helpers/mongoConnection.helper");
 const { ObjectId } = require("bson");
-
-const uri = process.env.MONGO_URI;
-
+//Third party dependencies
+let dayjs = require("dayjs");
 const ShufflepikCollection = {
   Users: "USERS",
   Guilds: "GUILDS",
   DeletedUsers: "DELETED_USERS",
   DeletedContent: "DELETED_CONTENT",
-};
-
-/**
- * Creates an instance of a Mongo connection, creates connection.
- * @returns Mongo client promise. More specifically returns an active mongo connection.
- */
-//async function client() {
-let mongo = function () {
-  try {
-    let db = null;
-    async function dbConnect() {
-      try {
-        const client = new MongoClient(uri, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        });
-
-        let _db = await client.connect();
-
-        return _db;
-      } catch (err) {
-        console.log(err);
-        return err;
-      }
-    }
-
-    async function getClient() {
-      try {
-        const client = new MongoClient(uri, {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-        });
-        return client;
-      } catch (err) {
-        console.log(err);
-        throw e;
-      }
-    }
-
-    async function getConnection() {
-      try {
-        if (db != null) {
-          return db;
-        } else {
-          db = await dbConnect();
-          return db;
-        }
-      } catch (err) {
-        return err;
-      }
-    }
-
-    return {
-      getConnection: getConnection,
-      getClient: getClient,
-    };
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
 };
 
 //*****                                                         *****//
@@ -90,30 +27,32 @@ let mongo = function () {
  */
 async function updateUserOnLogin(collection, user) {
   try {
-    const updatedUser = await collection.findOneAndUpdate(
-      {
-        _id: ObjectId(user.id),
-      },
-      {
-        $set: {
-          "discord.token": user.token,
-          "discord.guilds": user.guilds,
-          "discord.avatar": user.avatar,
-          "discord.connected": user.connected,
+    const updatedUser = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOneAndUpdate(
+        {
+          _id: ObjectId(user.id),
         },
-        $inc: {
-          "login.number_of_logins": 1,
-        },
+        {
+          $set: {
+            "discord.token": user.token,
+            "discord.guilds": user.guilds,
+            "discord.avatar": user.avatar,
+            "discord.connected": user.connected,
+          },
+          $inc: {
+            "login.number_of_logins": 1,
+          },
 
-        $push: {
-          "login.dates": new Date(Date.now()).toISOString(),
+          $push: {
+            "login.dates": new Date(Date.now()).toISOString(),
+          },
         },
-      },
-      {
-        returnNewDocument: true,
-        returnOriginal: false,
-      }
-    );
+        {
+          returnNewDocument: true,
+          returnOriginal: false,
+        }
+      );
 
     return updatedUser.value;
   } catch (err) {
@@ -131,7 +70,8 @@ async function updateUserOnLogin(collection, user) {
  */
 async function getGuildIntersect(collection, userID) {
   try {
-    const intersectingGuilds = await collection
+    const intersectingGuilds = await Connection.db
+      .collection(ShufflepikCollection.Users)
       .aggregate([
         {
           $lookup: {
@@ -179,39 +119,12 @@ async function getSPUser(discordId) {
   }
 }
 
-async function getAllGuilds() {
-  try {
-    //const client = await instantiateMongoClient();
-
-    //await client.connect();
-    //const client = await clientPromise();
-    const client = await mongo().getConnection();
-
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-
-    const allGuilds = await collection.find({}).toArray();
-
-    return allGuilds;
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}
-
 async function getAllUsers() {
   try {
-    //const client = await instantiateMongoClient();
-    //await client.connect();
-    //const client = await clientPromise();
-    const client = await mongo().getConnection();
-
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-
-    const allUsers = await collection.find({}).toArray();
+    const allUsers = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .find({})
+      .toArray();
 
     return allUsers;
   } catch (err) {
@@ -231,43 +144,38 @@ async function getAllUsers() {
  * @param {object} user User object containing metadata of user to update.
  * @returns updated user as an object.
  */
-async function updateUserByID(shufflepikUserID, user) {
+async function updateUserById(shufflepikUserID, user) {
   try {
-    //Instantiate mongo client;
-    //const client = await instantiateMongoClient();
-    //Connect MongoClient
-    //await client.connect();
-    //const client = await clientPromise();
-    const client = await mongo().getConnection();
-
-    //Define collection as users collection
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    //Update the user in database
-    const updatedUser = await collection.findOneAndUpdate(
-      {
-        _id: ObjectId(shufflepikUserID),
-      },
-      {
-        $set: {
-          discord: {
-            connected: true,
-            avatar: user.discord.avatar,
-            token: user.discord.token,
-            guilds: user.discord.guilds,
-            username: user.discord.username,
-            id: user.discord.id,
-            discriminator: user.discord.discriminator,
+    console.log("Update user by id");
+    console.log(await Connection.db);
+    const updatedUser = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOneAndUpdate(
+        {
+          _id: ObjectId(shufflepikUserID),
+        },
+        {
+          $set: {
+            refresh_token: user.refreshToken,
+            discord: {
+              connected: true,
+              avatar: user.discord.avatar,
+              token: user.discord.token,
+              guilds: user.discord.guilds,
+              username: user.discord.username,
+              id: user.discord.id,
+              discriminator: user.discord.discriminator,
+            },
           },
         },
-      },
-      {
-        upsert: true,
-        //returnOriginal: false,
-        returnDocument: "after",
-      }
-    );
+        {
+          upsert: true,
+          //returnOriginal: false,
+          returnDocument: "after",
+        }
+      );
+    console.log("Results of update by id :");
+    console.log(updatedUser);
     //Actual results of query are in 'value' object of results so return that.
     return updatedUser.value;
   } catch (err) {
@@ -285,20 +193,28 @@ async function updateUserByID(shufflepikUserID, user) {
  */
 async function getUserByEmail(email) {
   try {
-    //const client = await instantiateMongoClient();
-    //await client.connect();
-    //const client = await clientPromise();
-    const client = await mongo().getConnection();
-
-    const collection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Users);
-    const user = await collection.findOne({
-      email: email,
-    });
+    const user = await Connection.db
+      .collection(ShufflepikCollection.Users)
+      .findOne({
+        email: email,
+      });
     if (user === null) return false;
 
     return user;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+async function getAllGuilds() {
+  try {
+    const allGuilds = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .find({})
+      .toArray();
+
+    return allGuilds;
   } catch (err) {
     console.log(err);
     throw err;
@@ -313,31 +229,23 @@ async function getUserByEmail(email) {
  */
 async function deleteImage(imageData) {
   try {
-    //Instantiate mongo client;
-    //const client = await instantiateMongoClient();
-    //Connect MongoClient
-    // await client.connect();
-    //const client = await clientPromise();
-    const client = await mongo().getConnection();
-
     const discordId = imageData.image_url.split("/")[2];
-    //Define collection as users collection
-    const guildsCollection = await client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.Guilds);
-    let deletedImageGuildData = await guildsCollection.findOneAndUpdate(
-      {
-        "discord.id": discordId,
-      },
-      {
-        $pull: {
-          image_pool: {
-            _id: ObjectId(imageData.image_id),
+    let deletedImageGuildData = await Connection.db
+      .collection(ShufflepikCollection.Guilds)
+      .findOneAndUpdate(
+        {
+          "discord.id": discordId,
+        },
+        {
+          $pull: {
+            image_pool: {
+              _id: ObjectId(imageData.image_id),
+            },
           },
         },
-      },
-      { returnDocument: "before" }
-    );
+        { returnDocument: "before" }
+      );
+
     //ensure the value is represented in variable
     const guildData = deletedImageGuildData.value;
     const deletedContentObj = {
@@ -369,22 +277,20 @@ async function deleteImage(imageData) {
     }
     const imageToDelete = await findImage();
 
-    const deletedContentCollection = client
-      .db(process.env.SHUFFLEPIK_DB)
-      .collection(ShufflepikCollection.DeletedContent);
-
-    const deletedContentResult = await deletedContentCollection.updateOne(
-      {
-        "discord.id": discordId,
-      },
-      {
-        $set: deletedContentObj,
-        $push: { image_pool: imageToDelete },
-      },
-      {
-        upsert: true,
-      }
-    );
+    const deletedContentResult = await Connection.db
+      .collection(ShufflepikCollection.DeletedContent)
+      .updateOne(
+        {
+          "discord.id": discordId,
+        },
+        {
+          $set: deletedContentObj,
+          $push: { image_pool: imageToDelete },
+        },
+        {
+          upsert: true,
+        }
+      );
 
     const returnObj = {
       album_id: discordId,
@@ -399,14 +305,12 @@ async function deleteImage(imageData) {
 }
 
 let controller = {};
-//controller.clientPromise = clientPromise;
 controller.getGuildIntersect = getGuildIntersect;
-controller.getAllGuilds = getAllGuilds;
 controller.getAllUsers = getAllUsers;
+controller.getAllGuilds = getAllGuilds;
 controller.getUserByEmail = getUserByEmail;
-controller.updateUserByID = updateUserByID;
+controller.updateUserById = updateUserById;
 controller.updateUserOnLogin = updateUserOnLogin;
 controller.deleteImage = deleteImage;
-controller.mongo = mongo;
 
 module.exports = controller;

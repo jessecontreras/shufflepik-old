@@ -1,10 +1,12 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const { SlashCommandBuilder } = require("@discordjs/builders"); //from "@discordjs/builders";
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("shufflepik")
     .setDescription("Display a random picture from server pool"),
-  async execute(interaction) {
-    await interaction.reply("Pong!");
-  },
 };
+/*
+export const data = new SlashCommandBuilder()
+  .setName("shufflepik")
+  .setDescription("Display a random picture from server pool");
+*/

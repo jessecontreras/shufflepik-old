@@ -12,7 +12,6 @@ import { SpSnackBarService } from '../_services/sp-snackbar.service';
 export class SpSnackBarComponent implements OnInit {
   constructor(
     @Inject(MAT_SNACK_BAR_DATA) public data: any,
-    private snackBar: SpSnackBarService,
     private snackBarRef: MatSnackBarRef<SpSnackBarComponent>
   ) {}
   ngOnInit(): void {}

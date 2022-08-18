@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <title>Confirm email</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body { background: #f4f9fc; width: calc(100vw - 40px); overflow-x: hidden;
+      font-family: "Roboto", sans-serif; } .header { } table { width: 100%;
+      max-width: 650px; } .confirm-email, body, table, .confirm-email-button,
+      .welcome-card, .greeting-emoji { margin: auto; } .sp-header-logo { height:
+      45px; /* height: 30%; width: 100%; padding: 10px 0;*/ } .header td {
+      text-align: center; vertical-align: middle; padding: 30px 0; }
+      .welcome-card { border-spacing: 0; border-color: transparent; box-shadow:
+      0 4px 8px 0 rgba(0, 0, 0, 0.2); max-width: 600px; margin: auto;
+      border-radius: 5px; } .welcome-card table { border-spacing: 0; }
+      .greeting-header, .greeting-image-container { background: rgb(112, 196,
+      227); background: linear-gradient( 90deg, rgba(112, 196, 227, 1) 0%,
+      rgba(121, 69, 197, 1) 37%, rgba(78, 84, 200, 1) 100% ); color: white;
+      /*padding: 20px;*/ border: none; } .greeting-header { border-radius: 5px
+      5px 0 0; } .greeting-image-container { padding: 0 20px; }
+      .greeting-message { font-size: 1.75rem; font-weight: bolder; text-align:
+      center; padding: 15px 5px; margin-block-end: 0; } .greeting-emoji { width:
+      100%; max-width: 250px; display: block; border: none; padding: 0 5px; }
+      .messaging { border-radius: 0 0 5px 5px; background: white; color: black;
+      padding: 20px; text-align: center; /*filter: drop-shadow(0.25rem 0 0.3rem
+      rgba(0, 0, 0, 0.25));*/ } .confirm-email-button { -webkit-appearance:
+      button; -moz-appearance: button; appearance: button; text-decoration:
+      none; cursor: pointer !important; /*margin: 15px 0;*/ border-style: solid;
+      border-color: #66c; color: white; background-color: #4e54c8; /*
+      font-family: "Roboto", sans-serif;*/ font-family: inherit; /*height:
+      47.5px;*/ padding: 12.75px 25px; font-size: 1rem; border-radius: 30px; }
+      .footer { margin: 12.5px auto 10px; color: #91acbb; font-size: 0.9rem;
+      text-align: center; width: 65%; } /* (landscape phones, 576px and up)*/
+      @media all and (min-width: 576px) { .header { /*align-self: center;*/ }
+      .sp-header-logo { height: 75px; } .greeting-message { font-size: 2.5rem; }
+      .footer { margin: 30px auto 10px; } } /* (landscape phones, 576px and
+      up)*/ @media all and (max-width: 576px) and (min-height: 700px) {
+      .welcome-card { position: relative; margin-top: 37.5%; transform:
+      translateY(-25%); } .footer { margin: 20px auto 10px; } } @media
+      (min-width: 800px) { .welcome-card { margin-top: 50%; transform:
+      translateY(-50%); } .footer { width: 35%; } } @media (min-width: 1200px) {
+      .welcome-card { margin-top: 0; transform: unset; } }
+    </style>
+  </head>
+  <body>
+    <div class="confirm-email">
+      <table class="header" role="presentation">
+        <tr>
+          <td>
+            <img
+              class="sp-header-logo"
+              src="https://iili.io/gdpzQV.png"
+              alt="Shufflepik Logo"
+            />
+          </td>
+        </tr>
+      </table>
+      <div class="welcome-card">
+        <table>
+          <tr>
+            <td class="greeting-header">
+              <h1 class="greeting-message">Welcome to Shufflepik!</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="greeting-image-container">
+              <img
+                class="greeting-emoji"
+                src="https://iili.io/gKM2EX.md.png"
+                alt="Email icon"
+              />
+            </td>
+          </tr>
+        </table>
+
+        <!-- Body 1 -->
+        <table class="messaging">
+          <tr>
+            <td>
+              <h3>
+                We're really excited to welcome you to Shufflepik. Click the
+                button below to confirm your email address.
+              </h3>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <a
+                href="{{confirmationEmailLink}}"
+                class="confirm-email-button"
+                style="cursor: pointer; color: white"
+              >Confirm
+              </a>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <table class="footer">
+        <tr>
+          <td><p>Shufflepik</p></td>
+          <td><p>•</p></td>
+          <td><p>Los Angeles, CA, USA</p></td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
