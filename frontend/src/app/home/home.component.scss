@@ -29,6 +29,7 @@ $highlight-purple: #3601d6;
 .navigate-before,
 .navigate-next,
 .confirm-email-prompt,
+.confirm-email-prompt-context,
 .bot-not-installed-prompt {
   color: $sp-purple !important;
 }
@@ -55,6 +56,7 @@ $highlight-purple: #3601d6;
 .upload-card__image-submit,
 .upload-card__image-select--selected,
 .confirm-email-prompt,
+.confirm-email-prompt-context,
 .bot-not-installed-prompt {
   grid-column: 1/12;
   text-align: center;
@@ -107,6 +109,9 @@ $highlight-purple: #3601d6;
 }
 .confirm-email-prompt {
   grid-row: 2/3;
+}
+.confirm-email-prompt-context {
+  grid-row: 3/4;
 }
 .bot-not-installed-prompt {
   grid-row: 8/10;

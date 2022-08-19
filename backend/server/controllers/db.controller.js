@@ -156,7 +156,6 @@ async function updateUserById(shufflepikUserID, user) {
         },
         {
           $set: {
-            refresh_token: user.refreshToken,
             discord: {
               connected: true,
               avatar: user.discord.avatar,

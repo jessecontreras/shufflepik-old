@@ -222,7 +222,6 @@ export class AccountService {
       const deleteResponse = await lastValueFrom(
         this.http.delete(`${environment.apiUrl}/users/${_id}`)
       );
-
       return;
     } catch (err) {
       console.log(err);

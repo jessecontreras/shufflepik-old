@@ -807,7 +807,7 @@ async function getImages(_id, albumId) {
  * @param {object} res Reference to the expressjs response object.
  * @returns {Promise<object|string>} Object with user data if user is not integrated. String error message if user is already integrated.
  */
-async function integrateUser(req) {
+async function integrateUser(req,res) {
   try {
     console.log("In integrate user");
 
@@ -866,6 +866,7 @@ async function integrateUser(req) {
         email_validation: updatedUser.email_validation,
         albums: guildAndAlbumData.albums,
         email: updatedUser.email,
+        //refreshToken: updatedUser.refresh_token,
       };
       console.log("User is:");
       console.log(user);
@@ -1240,32 +1241,41 @@ async function _deleteAccount(_id) {
       });
 
     const deletedUser = deletedUserResponse.value;
+    console.log("Deleted user is:");
     console.log(deletedUser);
-
+    console.log("???????????????");
     if (deletedUser) {
-      await Connection.db.collection(ShufflepikCollection.Users).updateOne(
-        { _id: ObjectId(_id) },
-        {
-          $set: deletedUser,
-          $push: { dates_deleted: dayjs().format() },
-        },
-        {
-          upsert: true,
-        }
-      );
-
+      console.log("HERE 1");
+      await Connection.db
+        .collection(ShufflepikCollection.DeletedUsers)
+        .updateOne(
+          {
+            email: deletedUser.email,
+          },
+          {
+            $set: _.omit(deletedUser, "_id"),
+            $push: { dates_deleted: dayjs().format() },
+          },
+          {
+            upsert: true,
+          }
+        );
+      console.log("HERE 2");
       const urlReferences = await getDeletedUserImageReferences(
         deletedUser._id
       );
-
+      console.log("HERE 3");
       //Contains content moved from active collection to inactive (deleted) collection.
       await deleteUserContent(deletedUser._id);
+      console.log("HERE 4");
       //Don't call this if there are no images to delete
-      if (urlReferences.length <= 0)
-        await deleteUserImagesFromImagePools(deletedUser);
-      //TODO use url references to move
-
+      console.log("HERE 5");
+      await deleteUserImagesFromImagePools(deletedUser);
+      console.log("HERE 6");
       await media_controller.deleteUserAccountImages(urlReferences);
+      console.log("HERE 7");
+      //TODO use url references to move
+      //Don't call this if there are no images to delete
     }
 
     return;
@@ -1274,6 +1284,7 @@ async function _deleteAccount(_id) {
       err.name === MongoErrors.Error &&
       err.code === MongoErrors.DuplicateKey
     ) {
+      console.log("Made it to the catch error:");
       console.log(err);
       await handleMongoDuplicateKey(deletedUser);
 

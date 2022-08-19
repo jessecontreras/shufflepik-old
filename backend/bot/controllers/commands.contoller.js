@@ -252,6 +252,14 @@ async function getImageReferences(userId, guildId) {
     throw err;
   }
 }
+/**
+ * The knows API is defined in the parent class Relation.
+ * isBadVersion(version: number): boolean {
+ *     ...
+ * };
+ */
+
+
 
 /**
  * Moves user's content from active server pool(s) to DELETED_CONTENT collection.

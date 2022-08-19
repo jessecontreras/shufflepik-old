@@ -97,9 +97,12 @@
       "
     >
       <h2 class="confirm-email-prompt">
-        I hate to do this to you but you must validate ✔ your email before
+        I hate to do this to you but you must confirm ✔ your email before
         uploading pics 🖼️
       </h2>
+      <h3 class="confirm-email-prompt-context">
+        An email should have been sent to you upon account creation.
+      </h3>
     </ng-container>
     <div class="upload-card__group-include"></div>
     <div class="upload-card__image-title">
@@ -136,8 +139,7 @@
         *ngIf="upload"
         mode="determinate"
         [value]="simulatedProgressValue"
-        ></mat-progress-bar
-      >
+      ></mat-progress-bar>
     </div>
     <ng-container *ngIf="currentUser.discord.guilds">
       <h2

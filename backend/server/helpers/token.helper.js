@@ -96,6 +96,8 @@ async function getRefreshToken(userId) {
       .findOne({
         _id: ObjectId(userId),
       });
+    console.log("Inside of getfreshtoken after checking dbUser");
+    console.log(dbUser);
 
     if (!dbUser.refresh_token) return false;
     const isRefreshTokenValid = await verifyRefreshToken(

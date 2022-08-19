@@ -7,7 +7,6 @@ const verification_middleware = require("../middleware/verification.middleware")
 //Helper modules
 const token_helper = require("../helpers/token.helper");
 
-
 //Routes
 router.post("/authenticate", authenticate);
 router.post("/register", register);
@@ -52,7 +51,7 @@ async function authenticate(req, res) {
       return;
     }
     //Do something like the below.
-    await setTokenCookie(res, res.locals.refreshToken);
+    await token_helper.setTokenCookie(res, res.locals.refreshToken);
     const user = _.omit(controllerResponse, ["discord.discriminator"]);
     res.send(user);
   } catch (err) {
@@ -99,6 +98,9 @@ async function integrate(req, res) {
       return;
     }*/
     // await token_helper.setTokenCookie(res, res.locals.refreshToken);
+    //Do something like the below.
+    //await token_helper.setTokenCookie(res, res.locals.refreshToken);
+
     res.send(integratedUser);
   } catch (err) {
     console.log(err);
@@ -275,7 +277,9 @@ async function images(req, res) {
 async function _delete(req, res) {
   try {
     //await user_controller.deleteAccount(req.params._id);
-    await user_controller.deleteAccount;
+    console.log("Made it to delete user");
+    console.log(req.params._id);
+    await user_controller.deleteAccount(req.params._id);
     res.json("Successfully deleted user");
   } catch (err) {
     console.log(err);

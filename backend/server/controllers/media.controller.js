@@ -297,7 +297,8 @@ async function deleteUserAccountImages(imageLocationReferences) {
       const fileName = currentUrl.split("/")[3];
       //File to be moved, final directory destination included.
       //MOD:Changing from `./deleted-media/${subDir}/${fileName}`; --> `../deleted-media/${subDir}/${fileName}`;
-      const deletedDirLoc = `../deleted-media/${subDir}`;
+      //const deletedDirLoc = `../deleted-media/${subDir}`;
+      const deletedDirLoc = `./deleted-media/${subDir}`;
       const deletedFileLoc = `${deletedDirLoc}/${fileName}`;
       //Ensure directory exists
       await fse.ensureDir(deletedDirLoc);
