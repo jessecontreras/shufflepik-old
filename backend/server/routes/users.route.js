@@ -43,8 +43,7 @@ async function authenticate(req, res) {
       req.body.password,
       res
     );
-    console.log("Controller response is:");
-    console.log(controllerResponse);
+
     //If the controllers response does not have an error message
     if (controllerResponse.serverErrorMessage) {
       res.send(controllerResponse);
@@ -186,24 +185,14 @@ async function albums(req, res) {
     const _id = req.params._id;
     const albums = await user_controller.getAlbums(_id);
     const areTokensNeeded = res.locals.refreshToken ? true : false;
-    console.log("ARE TOKENS NEEDED FOR THIS CALL?");
-    console.log(areTokensNeeded);
     let dataToSendToClient;
     if (areTokensNeeded) {
-      console.log("token is needed");
-      console.log(res.locals);
-      console.log(res.locals.refreshToken);
-      console.log(res.locals.jwt);
       dataToSendToClient = {
         jwt: res.locals.jwt,
         albums: albums,
       };
       //dataToSendToClient.jwt = res.locals.jwt;
       await token_helper.setTokenCookie(res, res.locals.refreshToken);
-      //If the jwt token needs to be reinstated attach to object to user.
-
-      //dataToSendToClient.albums = albums;
-      //jwtToken = res.locals.jwt;
     } else {
       dataToSendToClient = albums;
     }
@@ -232,8 +221,6 @@ async function guilds(req, res) {
       dataToSendtoClient = guilds;
     }
 
-    //res.send(guilds);
-    //res.send({ jwt: jwtToken, guilds: guilds });
     res.send(dataToSendtoClient);
     return;
   } catch (err) {}
@@ -244,11 +231,7 @@ async function images(req, res) {
     const _id = req.params._id;
     const albumId = req.params.albumId;
     const images = await user_controller.getImages(_id, albumId);
-    console.log("I'm in get images (for image albums)");
     const areTokensNeeded = res.locals.refreshToken ? true : false;
-    console.log(`Is token needed? : ${areTokensNeeded}`);
-    console.log("images are:");
-    console.log(images);
 
     let dataToSendToClient;
     if (areTokensNeeded) {
@@ -276,9 +259,6 @@ async function images(req, res) {
  */
 async function _delete(req, res) {
   try {
-    //await user_controller.deleteAccount(req.params._id);
-    console.log("Made it to delete user");
-    console.log(req.params._id);
     await user_controller.deleteAccount(req.params._id);
     res.json("Successfully deleted user");
   } catch (err) {
@@ -289,16 +269,12 @@ async function _delete(req, res) {
 
 async function refreshToken(req, res, next) {
   try {
-    console.log("Made it to refresh token route (backend)");
-    //const token = //req.cookies.refreshToken;
+
     const userId = req.body.userId;
     const controllerResponse = await user_controller.refreshToken(userId);
     //response will return as false if there is no refresh token or if it expired.
     if (!controllerResponse) res.status(401).send("invalid token...");
-    console.log("refresh token should be:");
-    console.log(controllerResponse.refreshToken);
-    console.log("jwt should be ");
-    console.log(controllerResponse.jwtToken);
+
     await token_helper.setTokenCookie(res, controllerResponse.refreshToken);
     res.json(controllerResponse.jwtToken);
   } catch (next) {
@@ -309,20 +285,15 @@ async function refreshToken(req, res, next) {
 }
 async function revokeToken(req, res, next) {
   try {
-    //accept token from request body o r cookie
-    //const token = req.body.token || req.cookies.refreshToken;
-    //console.log("token is:");
-    //console.log(token);
-    console.log("Revoke token() backend - route");
+
     const userId = req.body.userId;
     const tokenSuccessfullyRevoked = await user_controller.revokeToken(userId);
-    //if (!token) return res.status(400).json({ message: "Token is required" });
 
     res.json({ message: "Token revoked" });
   } catch (next) {
-    //console.log(err);
+  
     console.log(next);
-    // throw err;
+    //throw err;
   }
 }
 
@@ -331,8 +302,7 @@ async function forgotPassword(req, res) {
     const response = await user_controller.emailResetPasswordLink(
       req.body.email
     );
-    console.log(`Response for password would be: ${response}`);
-    //res.send({ message: response });
+
     res.json(response);
   } catch (err) {
     console.log(err);
@@ -342,7 +312,6 @@ async function forgotPassword(req, res) {
 
 async function sendPasswordResetPage(req, res) {
   try {
-    console.log("Made it here");
     const resetPassword = await user_controller.sendPasswordResetPage(
       req.query.reset_token
     );
@@ -352,8 +321,7 @@ async function sendPasswordResetPage(req, res) {
       /*const tokenParams = new URLSearchParams({
         id: resetPassword,
       });*/
-      console.log("this should have worked");
-      console.log(resetPassword);
+
       res.redirect(
         302,
         `${process.env.CLIENT_PATH}/reset-password/${resetPassword}`

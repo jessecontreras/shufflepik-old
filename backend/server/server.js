@@ -23,8 +23,6 @@ app.use(express.static(path.join(__dirname, "/public")));
 app.use(express.json());
 
 const server = app.listen(process.env.PORT, async () => {
-  console.log(`Listening on port ${process.env.PORT}!`);
-  console.log("Should open mongo connection as well");
   await Connection.open();
 });
 //Node.js process, enable graceful shutdown
@@ -37,7 +35,6 @@ process.on("SIGINT", () => {
       pm2.restart(process.id);
     } else {
       console.log("No error, move along");
-      await Connection.close();
       process.exit(0);
     }
   });

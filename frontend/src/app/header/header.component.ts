@@ -154,8 +154,6 @@ export class HeaderComponent implements OnInit {
     try {
       this.router.events.subscribe(async (event) => {
         if (event instanceof NavigationEnd) {
-          console.log('In router url detection:');
-          console.log(event);
           //Reset all values on navigatiom change, these properties are stateless between navigation.
           this.displayBackButton = false;
           this.loginPage = false;
@@ -186,10 +184,6 @@ export class HeaderComponent implements OnInit {
               `${this.routerCharCheck.IntegrateUserParams}`
             )
           ) {
-            //this.accountService.getGuilds();
-            console.log('Inside of getUser() in header');
-            console.log(this.previousUrl);
-            console.log(this.currentUrl);
             this.accountService.getUser();
           }
           if (
@@ -230,16 +224,15 @@ export class HeaderComponent implements OnInit {
               `${this.routerCharCheck.IntegrateUserParams}`
             )
           ) {
-            console.log('integrated shit');
             const userData = this.currentUrl.substring(
               this.currentUrl.indexOf('=') + 1
             );
+
             const userIntegrated = await this.accountService.integrateAccounts(
               this.accountService.user._id,
               userData
             );
-            console.log('user integrated is:');
-            console.log(userIntegrated);
+
             if (userIntegrated !== true) {
               this.snackBar.open(userIntegrated, 'OK', {
                 verticalPosition: this.verticalPosition,

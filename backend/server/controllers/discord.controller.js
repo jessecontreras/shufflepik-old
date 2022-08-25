@@ -1,3 +1,8 @@
+//import module
+//const LocalStorage = require("node-localstorage");
+let LocalStorage = require("node-localstorage").LocalStorage;
+// constructor function to create a storage directory inside our project for all our localStorage setItem.
+let localStorage = new LocalStorage("../scratch");
 //Local dependencies
 const { Connection } = require("../helpers/mongoConnection.helper");
 //Controller object
@@ -13,10 +18,10 @@ const crypto = require("crypto");
 const ShufflepikCollection = {
   Users: "USERS",
   Guilds: "GUILDS",
+  Scratch: "SCRATCH",
 };
 
 //Set up our local storage mechanism
-const storage = require("node-persist");
 //Database controller, where all db based queries and functions are housed.
 const db_controller = require("./db.controller");
 //Formalized server responses
@@ -135,7 +140,9 @@ async function installBot(req, res) {
         },
       };
       /*const result = await shufflepikCollection.insertOne(shufflepikGuild);*/
-      const result = await Guilds.insertOne(shufflepikGuild);
+      const result = await Connection.db
+        .collection(ShufflepikCollection.Guilds)
+        .insertOne(shufflepikGuild);
       return Response.Success;
     }
   } catch (err) {
@@ -233,9 +240,6 @@ async function getUserToken(code) {
       return tokenObject;
     } //end if urlObj.query.code
   } catch (err) {
-    console.log(
-      "Made it to get user token part of this shiz, discord_controller"
-    );
     console.log(err);
     throw err;
   }
@@ -348,9 +352,12 @@ async function getUserGuilds(tokenObject) {
 async function integrateUser(req, res) {
   try {
     //Get our user information saved locally
-    let userToIntegrate = await storage.valuesWithKeyMatch(req.data);
+    // let userToIntegrate = await storage.valuesWithKeyMatch(req.data);
+    const userIdentifer = req.data;
+    let userToIntegrate = localStorage.getItem(userIdentifer);
+
     //Local storage (node-persist) returns a single object array, we're simply referencing the object here.
-    userToIntegrate = userToIntegrate[0];
+    userToIntegrate = JSON.parse(userToIntegrate); //userToIntegrate[0];
     //The last four characters of 'data' value should be user's discriminator, if not return. We do this just to check, at a cursory level, that data has not been tampered with.
     const userDiscriminator = req.data.substring(0, 4);
     if (userDiscriminator == userToIntegrate.discord.discriminator) {
@@ -394,7 +401,12 @@ async function integrateUser(req, res) {
       };
       //Remove user from local storage
       //await storage.removeItem(req.data)
-      return user;
+      //localStorage.removeItem(req.data);
+      //return user;
+      return {
+        uIdentifer: userIdentifer,
+        user: user,
+      };
     } else {
       return;
     }
@@ -588,15 +600,14 @@ async function getIntersectingGuildsAndAlbums(
 async function tempUserStore(req) {
   try {
     //Initialize local storage
-    await initLocalStorage();
+    //await initLocalStorage();
     //Check for code before doing anything
     if (req.code) {
       const userToken = await getUserToken(req.code);
       const user = await getDiscordUser(userToken);
       const userGuilds = await getUserGuilds(userToken);
       const discordAvatar = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-
-      userData = {
+      const userData = {
         integrate_user: true,
         discord: {
           id: user.id,
@@ -612,7 +623,17 @@ async function tempUserStore(req) {
       const userIdentifier = `${userData.discord.discriminator.toString()}${crypto
         .randomBytes(16)
         .toString("hex")}`;
-      await storage.setItem(userIdentifier, userData);
+      await Connection.db.collection(ShufflepikCollection.Scratch).insertOne({
+        uId: userIdentifier,
+        uData: userData,
+      });
+      /* const stringifiedUserData = JSON.stringify(userData);
+      console.log(`UIder- ${userIdentifier}`);
+      console.log(typeof userIdentifier);
+      console.log(stringifiedUserData);*/
+      //localStorage.setItem(userIdentifier, stringifiedUserData);
+      //await saveInLocalStorage(userIdentifier, stringifiedUserData);
+      //console.log(localStorage.getItem(userIdentifier));
 
       return userIdentifier;
     } else {
@@ -633,7 +654,7 @@ async function tempUserStore(req) {
 async function tempUserStoreForBrokenToken(code) {
   try {
     //Initialize local storage
-    await initLocalStorage();
+    //await initLocalStorage();
     //Get user token
     const userToken = await getUserToken(code);
     const user = await getDiscordUser(userToken);
@@ -653,12 +674,39 @@ async function tempUserStoreForBrokenToken(code) {
         refresh_token: userToken.refresh_token,
       },
     };
+    const userIdentifier = `${userData.discord.discriminator.toString()}${crypto
+      .randomBytes(16)
+      .toString("hex")}`;
+    const stringifiedUserData = JSON.stringify(userData);
+    await saveInLocalStorage(userIdentifier, stringifiedUserData);
+    const guild = await Connection.db
+      .collection(ShufflepikCollection.Scratch)
+      .findOne({
+        guild_id: guildInfo.id,
+      });
     //Set the user's Discord ID as their identifier for lcal
-    await storage.setItem(userData.discord.id, userData);
-    return userData.discord.id;
+    // await storage.setItem(userData.discord.id, userData);
+    // localStorage.setItem(userIdentifier, JSON.stringify(userData));
+    return userIdentifer;
   } catch (err) {
     console.log(err);
 
+    throw err;
+  }
+}
+
+/**
+ *
+ * @param {string} uId - Unique id entry for data.
+ * @param {object} data - Discord user data.
+ * @returns
+ */
+async function saveInLocalStorage(uId, data) {
+  try {
+    localStorage.setItem(uId, data);
+    return;
+  } catch {
+    console.log(err);
     throw err;
   }
 }
@@ -672,28 +720,6 @@ async function redirectToRetainToken() {
     fetch(
       "https://discord.com/api/oauth2/authorize?client_id=825496326107430982&redirect_uri=https%3A%2F%2F7497f7c152d8.ngrok.io%2Fdiscord%2Fx-user-info&response_type=code&scope=identify%20email%20connections%20guilds"
     );
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}
-
-async function initLocalStorage() {
-  try {
-    //Must first call init to use temporary storage
-    await storage.init({
-      dir: "./scratch",
-      stringify: JSON.stringify,
-      parse: JSON.parse,
-      encoding: "utf8",
-      logging: false, // can also be custom logging function
-      ttl: false, // ttl* [NEW], can be true for 24h default or a number in MILLISECONDS or a valid Javascript Date object
-      expiredInterval: 60 * 1000, // every minute the process will clean-up the expired cache
-      // in some cases, you (or some other service) might add non-valid storage files to your
-      // storage dir, i.e. Google Drive, make this true if you'd like to ignore these files and not throw an error
-      forgiveParseErrors: false,
-    });
-    return;
   } catch (err) {
     console.log(err);
     throw err;

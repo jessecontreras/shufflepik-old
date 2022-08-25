@@ -240,12 +240,10 @@ export class HomeComponent {
       //Simulated progress value (this is to show the user a progress bar ASAP)
       this.simulatedProgressValue = 10;
       const res = await lastValueFrom(this.mediaService.uploadImage(formData));
-      console.log('response value:');
-      console.log(res);
+ 
 
       if (res.http_response.errorResponse) {
-        console.log('There was an error');
-        console.log(res);
+
         await this._snackBar.openSnackBar(
           res.http_response.errorResponse,
           'OK',
@@ -257,7 +255,6 @@ export class HomeComponent {
         return;
       } else {
         this.upload = res;
-        console.log('aqui');
         this.simulatedProgressValue = 20;
         //The JWT interceprot may string the "updatedImages" from response object
         const updatedImages = this.upload.http_response.updatedImages

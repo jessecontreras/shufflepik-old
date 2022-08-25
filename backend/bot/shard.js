@@ -1,9 +1,10 @@
 //Node native path utility module
-import { resolve } from "path";
+const resolve = require("path").resolve;
+//const path = require("path");
 //Load environment variables from .env file
 require("dotenv").config({ path: resolve(__dirname, "./.env") });
 //Shard Manager
-import { ShardingManager } from "discord.js";
+const { ShardingManager } = require("discord.js");
 //Create (instance) shard manager
 const manager = new ShardingManager(`${__dirname}/register-events.js`, {
   token: process.env.DISCORD_BOT_TOKEN,

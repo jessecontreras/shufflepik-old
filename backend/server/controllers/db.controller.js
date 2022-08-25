@@ -146,8 +146,7 @@ async function getAllUsers() {
  */
 async function updateUserById(shufflepikUserID, user) {
   try {
-    console.log("Update user by id");
-    console.log(await Connection.db);
+
     const updatedUser = await Connection.db
       .collection(ShufflepikCollection.Users)
       .findOneAndUpdate(
@@ -173,8 +172,6 @@ async function updateUserById(shufflepikUserID, user) {
           returnDocument: "after",
         }
       );
-    console.log("Results of update by id :");
-    console.log(updatedUser);
     //Actual results of query are in 'value' object of results so return that.
     return updatedUser.value;
   } catch (err) {

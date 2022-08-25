@@ -5,8 +5,3 @@ module.exports = {
     .setName("shufflepik")
     .setDescription("Display a random picture from server pool"),
 };
-/*
-export const data = new SlashCommandBuilder()
-  .setName("shufflepik")
-  .setDescription("Display a random picture from server pool");
-*/

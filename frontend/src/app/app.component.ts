@@ -60,7 +60,7 @@ export class AppComponent {
   async consoleLogGif() {
     try {
       const backgroundImage = [
-        'background-image: url(https://i.imgur.com/uu6qcMO.mp4)',
+        'background-image: url(https://tenor.com/bivBL.gif)',
         'background-size: cover',
         'color: black',
         'padding: 100px',

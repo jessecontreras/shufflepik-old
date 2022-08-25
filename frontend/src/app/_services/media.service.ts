@@ -130,8 +130,7 @@ export class MediaService {
       let imageToBeDeleted: any = await lastValueFrom(
         this.http.delete(`${environment.apiUrl}/media/image`, options)
       );
-      console.log('Should have made it back from backend deleted pic');
-      console.log(imageToBeDeleted);
+
       //Jwt interceptor sometimes modifies the structure of the deletedImage so we check to see if there's an embedded object in response, assign variable accordingly
       imageToBeDeleted = imageToBeDeleted.deletedImage
         ? imageToBeDeleted.deletedImage
@@ -199,8 +198,7 @@ export class MediaService {
    */
   async updateAlbumSubject(imageData: Image[]) {
     try {
-      console.log('Update album subject ');
-      console.log(imageData);
+
       const albums = this.albums ? this.albums : [];
 
       for (let i = 0; i < imageData.length; i++) {

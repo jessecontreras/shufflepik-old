@@ -77,9 +77,7 @@ module.exports = {
       }
       return;
     } catch (err) {
-      console.log("Error here tho?");
-      console.log(err);
-      console.log(interaction);
+      //For errors here remove whitespace after shufflepik
       throw err;
     }
   },

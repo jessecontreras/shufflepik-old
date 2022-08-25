@@ -87,24 +87,20 @@ async function generateJwtToken(userId) {
  */
 async function getRefreshToken(userId) {
   try {
-    console.log("made it to backend, get user, user is:");
-    console.log(userId);
-    console.log(typeof userId);
+
 
     const dbUser = await Connection.db
       .collection(ShufflepikCollection.Users)
       .findOne({
         _id: ObjectId(userId),
       });
-    console.log("Inside of getfreshtoken after checking dbUser");
-    console.log(dbUser);
+
 
     if (!dbUser.refresh_token) return false;
     const isRefreshTokenValid = await verifyRefreshToken(
       dbUser.refresh_token.expires
     );
-    console.log("Made it back from");
-    console.log(isRefreshTokenValid);
+
     if (!isRefreshTokenValid) return false; //token is expired return a 402
     return dbUser.refresh_token;
   } catch (err) {
@@ -121,13 +117,10 @@ async function getRefreshToken(userId) {
 async function verifyRefreshToken(refreshTokenExpiration) {
   try {
     const currentDate = new Date(Date.now()).toISOString();
-    console.log(`currentDate is : ${currentDate}`);
-    console.log(typeof currentDate);
-    console.log(refreshTokenExpiration);
-    console.log(typeof refreshTokenExpiration.toString());
+
     const validDate =
       currentDate <= refreshTokenExpiration.toString() ? true : false;
-    console.log(`Date is valid: ${validDate}`);
+
     return validDate;
   } catch (err) {
     console.log(err);
@@ -141,20 +134,15 @@ async function verifyRefreshToken(refreshTokenExpiration) {
  */
 async function refreshToken(userId) {
   try {
-    console.log("Inside of refresh token");
-    console.log(`user id is:${new ObjectId(userId)}`);
-    console.log(`User id as an object id user: ${new ObjectId(userId)}`);
+
 
     const refreshToken = await getRefreshToken(userId);
     if (!refreshToken) return false;
 
-    console.log("Current refresh token is:");
-    console.log(refreshToken);
 
     //Replace old refresh token with a new one and save
     const newRefreshToken = await generateRefreshToken();
-    console.log("New refresh token:");
-    console.log(newRefreshToken);
+
     //Specify now as the time the refresh token is revoked
     refreshToken.revoked = dayjs().format(); //Date.now();
     //Specify which token will replace this refresh token
@@ -184,8 +172,7 @@ async function refreshToken(userId) {
         ],
         { upsert: true, returnNewDocument: true, returnOriginal: false }
       );
-    console.log("Updated doc is:");
-    console.log(updatedDoc);
+
     //generate a new jwt
     const jwtToken = await generateJwtToken(userId);
     //return tokens and user's basic details

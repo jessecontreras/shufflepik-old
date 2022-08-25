@@ -287,8 +287,13 @@ async function moveImageToGuildDir(payload) {
 async function deleteUserAccountImages(imageLocationReferences) {
   try {
     if (imageLocationReferences.length <= 0) return;
+
+    //TODO: FIX IMAGE REFERENCES THERE ARE TOO MANY OF THEM...
     for (i = 0; i < imageLocationReferences.length; i++) {
+   
       let currentUrl = imageLocationReferences[i].image_url;
+
+
       //Current (relative) location of file to be moved
       const currentLoc = `.${currentUrl}`;
       //The subdirectory of 'delete-media' directory to store deleted image.
@@ -298,10 +303,12 @@ async function deleteUserAccountImages(imageLocationReferences) {
       //File to be moved, final directory destination included.
       //MOD:Changing from `./deleted-media/${subDir}/${fileName}`; --> `../deleted-media/${subDir}/${fileName}`;
       //const deletedDirLoc = `../deleted-media/${subDir}`;
-      const deletedDirLoc = `./deleted-media/${subDir}`;
-      const deletedFileLoc = `${deletedDirLoc}/${fileName}`;
+      //const deletedDirLoc = `./deleted-media/${subDir}`;
+      //const deletedFileLoc = `${deletedDirLoc}/${fileName}`;
+      //File to be moved, final directory destination included.
+      const deletedFileLoc = `./deleted-media/${subDir}/${fileName}`;
       //Ensure directory exists
-      await fse.ensureDir(deletedDirLoc);
+      await fse.ensureDir(`./deleted-media/${subDir}`);
       //move file from live directory to non-live directory
       await fse.move(currentLoc, deletedFileLoc);
       //await fse.move(currentLoc, deletedFileLoc, { overwrite: true });

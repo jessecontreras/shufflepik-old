@@ -61,7 +61,6 @@ export class AlbumComponent implements OnInit {
   }
 
   async imageLoaded(index: number) {
-    console.log(`Image with index of ${index} is loaded`);
     this.loadingImages[index].loaded = true;
   }
 
@@ -69,7 +68,6 @@ export class AlbumComponent implements OnInit {
     try {
       const albumId = this.route.snapshot.paramMap.get('id')!.toString();
       let currentAlbum: Album;
-      console.log('Made it to subscription');
 
       for (let i = 0; i < this.accountService.user.albums?.length!; i++) {
         if (this.accountService.user.albums![i].id === albumId) {
@@ -82,7 +80,7 @@ export class AlbumComponent implements OnInit {
           break;
         }
       }
-      console.log('Time to reassign images');
+
       this.images = currentAlbum!.images.slice().reverse();
     } catch (err) {
       console.log(err);

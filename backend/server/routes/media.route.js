@@ -20,11 +20,9 @@ module.exports = router;
 
 async function deleteImage(req, res) {
   try {
-    console.log("delete image, backend route");
-    console.log(req.body);
+
     const deletedImage = await media_controller.deleteImage(req.body);
-    console.log("made it back, deleted image is");
-    console.log(deletedImage);
+
     const areTokensNeeded = res.locals.refreshToken ? true : false;
     let dataToSendToClient;
     if (areTokensNeeded) {
@@ -37,8 +35,7 @@ async function deleteImage(req, res) {
     } else {
       dataToSendToClient = deletedImage;
     }
-    //res.json(deletedImage);
-    //res.json(dataToSendToClient);
+
     res.json(dataToSendToClient);
   } catch (err) {
     console.log(err);

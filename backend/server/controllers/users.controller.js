@@ -1,4 +1,9 @@
 require("dotenv").config();
+
+//import module
+let LocalStorage = require("node-localstorage").LocalStorage;
+// constructor function to retrieve localStorage Items from the previously declared directory.
+let localStorage = new LocalStorage("../scratch");
 //Local dependencies
 
 //Utility module
@@ -16,7 +21,7 @@ const Handlebars = require("handlebars");
 
 let dayjs = require("dayjs");
 //Set up our local storage mechanism
-const storage = require("node-persist");
+
 
 //const MongoClient = require("mongodb").MongoClient;
 
@@ -37,6 +42,7 @@ const ShufflepikCollection = {
   Guilds: "GUILDS",
   DeletedUsers: "DELETED_USERS",
   DeletedContent: "DELETED_CONTENT",
+  Scratch: "SCRATCH",
 };
 
 const MongoErrors = {
@@ -61,7 +67,7 @@ const Response = {
     "Hmmm, something went wrong, we suggest having another password link sent to your email.",
   PasswordResetSuccess: "  Successfully changed password!",
   ValidateEmailSent:
-    "Please validate your email, we've successfully sent you a validation email.",
+    "Please confirm your email, we've successfully sent you an email.",
   ValidateEmailSuccess: "email-validation-successful",
   ValidateEmailError:
     "Something went wrong with validating your email. Request another link or contact us if you think this is an error.",
@@ -92,22 +98,6 @@ controller.revokeToken = revokeToken;
 
 module.exports = controller;
 
-/**
- * Set up a MongoDB connection.
- * @returns {Promise<object>} Object with 3 properties.
- */
-async function getMongoConnection() {
-  try {
-    console.log("In get Mongo connection the value of mongo in this case is:");
-
-    const mongo = await MongoDb.connectToMongoDb();
-    console.log(mongo.Collection);
-    return mongo.Collection;
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}
 async function authenticate(email, password, res) {
   try {
     const dbUser = await Connection.db
@@ -117,17 +107,14 @@ async function authenticate(email, password, res) {
       });
 
     if (dbUser && bcrypt.compareSync(password, dbUser.hash)) {
-      console.log("Succesfully authenticated");
       //generate a jwt token
       const jwtToken = await token_helper.generateJwtToken(dbUser._id); //await generateJwtToken(dbUser._id);
-      console.log("jwt is:");
-      console.log(jwtToken);
+
       //generate a refreshToken
       const refreshToken = await token_helper.generateRefreshToken();
       res.locals.refreshToken = refreshToken;
       //await generateRefreshToken();
-      console.log("refresh token is:");
-      console.log(refreshToken);
+
       //Authentication successfull return user
       let user = {
         _id: dbUser._id,
@@ -181,8 +168,7 @@ async function authenticate(email, password, res) {
           const discordToken = await discord_controller.encryptRefreshToken(
             dbUser
           );
-          console.log("Refresh token is");
-          console.log(refreshToken);
+
           //A user object, this will only update certain discord properties in our DB User object
           dataToUpdate = {
             id: dbUser._id,
@@ -273,8 +259,7 @@ async function revokeToken(userId) {
         { $push: { revoked_tokens: { $each: [refreshToken], $slice: -96 } } },
         { upsert: true }
       );
-    console.log("revoked token is:");
-    console.log(revokedToken);
+
     return;
   } catch (err) {
     console.log(err);
@@ -339,7 +324,7 @@ async function validateEmail(token) {
 async function tempUserStoreForBrokenToken(code) {
   try {
     //Initialize local storage
-    await initLocalStorage();
+    // await initLocalStorage();
 
     //Get user token
     const userToken = await discord_controller.getUserToken(code);
@@ -362,7 +347,8 @@ async function tempUserStoreForBrokenToken(code) {
       },
     };
     //Set the user's Discord ID as their identifier for lcal
-    await storage.setItem(userData.discord.id, userData);
+    //await storage.setItem(userData.discord.id, userData);
+    localStorage.setItem(userData.discord.id, JSON.stringify(userData));
 
     return userData.discord.id;
   } catch (err) {
@@ -461,13 +447,14 @@ async function getUser(_id) {
 async function processUserWithTokenIssue(userData) {
   try {
     //Initialize localStorage
-    await initLocalStorage();
+    //await initLocalStorage();
 
     const dbUser = await Connection.db
       .collection(ShufflepikCollection.Users)
       .findOne({ _id: userData._id });
     //Get user from local storage
-    const user = await storage.valuesWithKeyMatch(userID.data);
+    //const user = await storage.valuesWithKeyMatch(userID.data);
+    //const user = localStorage.getItem(JSON.parse(userID.data));
   } catch (err) {
     console.log(err);
     throw err;
@@ -690,8 +677,6 @@ async function getGuilds(_id) {
  */
 async function getAlbums(_id) {
   try {
-    console.log("Get albums controller");
-
     const albums = await Connection.db
       .collection(ShufflepikCollection.Users)
       .aggregate([
@@ -807,16 +792,21 @@ async function getImages(_id, albumId) {
  * @param {object} res Reference to the expressjs response object.
  * @returns {Promise<object|string>} Object with user data if user is not integrated. String error message if user is already integrated.
  */
-async function integrateUser(req,res) {
+async function integrateUser(req, res) {
   try {
-    console.log("In integrate user");
-
+    const scratchDoc = await Connection.db
+      .collection(ShufflepikCollection.Scratch)
+      .findOneAndDelete({
+        uId: req.data,
+      });
+    console.log("Returned scratch document");
+    console.log(scratchDoc);
+    const userToIntegrate = scratchDoc.value.uData;
     //if so respond with message stating they can only have one sp account per discord user.
     //Get our user information saved locally
-    let userToIntegrate = await storage.valuesWithKeyMatch(req.data);
-    //Local storage (node-persist) returns a single object array, we're simply referencing the object here.
-    userToIntegrate = userToIntegrate[0];
-
+    //let userToIntegrate = await storage.valuesWithKeyMatch(req.data);
+    console.log(`UIder IU- ${req.data}`);
+    console.log(typeof req.data);
     const userExists = await Connection.db
       .collection(ShufflepikCollection.Users)
       .findOne({
@@ -825,6 +815,11 @@ async function integrateUser(req,res) {
 
     if (userExists && userExists.discord.connected && userExists.discord.token)
       return { duplicateUserError: Response.UserToIntegrateAlreadyConnected };
+
+    //let userToIntegrate = await getFromLocalStorage(req.data); //localStorage.getItem(req.data);
+    console.log(userToIntegrate);
+    // userToIntegrate = JSON.parse(userToIntegrate);
+    // console.log(userToIntegrate);
 
     //The last four characters of 'data' value should be user's discriminator, if not return. We do this just to check, at a cursory level, that data has not been tampered with.
     const userDiscriminator = req.data.substring(0, 4);
@@ -868,8 +863,6 @@ async function integrateUser(req,res) {
         email: updatedUser.email,
         //refreshToken: updatedUser.refresh_token,
       };
-      console.log("User is:");
-      console.log(user);
 
       //Remove user from local storage
       //await storage.removeItem(req.data)
@@ -882,7 +875,16 @@ async function integrateUser(req,res) {
     throw err;
   }
 }
-
+async function getFromLocalStorage(uId) {
+  try {
+    const userData = localStorage.getItem(uId);
+    console.log(userData);
+    return JSON.parse(userData);
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
 /**
  * Gets passed user's intersecting guilds and image albums.
  *
@@ -1170,7 +1172,6 @@ async function emailValidationLink(email) {
       validation_token: validatonToken,
     });
     const locals = `${process.env.API_PATH}/users/ve?${valTok}`;
-    console.log(`Locals should be: ${locals}`);
 
     const emailOptions = {
       to: email,
@@ -1241,11 +1242,8 @@ async function _deleteAccount(_id) {
       });
 
     const deletedUser = deletedUserResponse.value;
-    console.log("Deleted user is:");
-    console.log(deletedUser);
-    console.log("???????????????");
+
     if (deletedUser) {
-      console.log("HERE 1");
       await Connection.db
         .collection(ShufflepikCollection.DeletedUsers)
         .updateOne(
@@ -1260,22 +1258,21 @@ async function _deleteAccount(_id) {
             upsert: true,
           }
         );
-      console.log("HERE 2");
+
       const urlReferences = await getDeletedUserImageReferences(
         deletedUser._id
       );
-      console.log("HERE 3");
+
       //Contains content moved from active collection to inactive (deleted) collection.
       await deleteUserContent(deletedUser._id);
-      console.log("HERE 4");
+
       //Don't call this if there are no images to delete
-      console.log("HERE 5");
+
       await deleteUserImagesFromImagePools(deletedUser);
-      console.log("HERE 6");
+
       await media_controller.deleteUserAccountImages(urlReferences);
-      console.log("HERE 7");
+
       //TODO use url references to move
-      //Don't call this if there are no images to delete
     }
 
     return;
@@ -1452,10 +1449,10 @@ async function getDeletedUserImageReferences(shufflepikUserId) {
     const urlReferences = await Connection.db
       .collection(ShufflepikCollection.Guilds)
       .aggregate([
+        { $unwind: { path: "$image_pool" } },
         {
           $match: { "image_pool.uploaded_by_id": shufflepikUserId.toString() },
         },
-        { $unwind: { path: "$image_pool" } },
         { $replaceRoot: { newRoot: "$image_pool" } },
         {
           $project: { _id: 0, image_url: 1 },
@@ -1496,7 +1493,6 @@ async function instantiateMongoClient() {
  */
 async function emailResetPasswordLink(email) {
   try {
-    console.log("made it here");
     //Check if user exists using function from our database controller
     const user = await db_controller.getUserByEmail(email.toLowerCase());
     //If user does not exists return. Provide no extra context to prevent email enumeration.

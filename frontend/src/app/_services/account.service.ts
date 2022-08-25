@@ -73,9 +73,8 @@ export class AccountService {
   async logout(revokeRefreshToken: boolean): Promise<void> {
     try {
       const userId = this.user._id;
-      console.log(revokeRefreshToken);
+
       if (revokeRefreshToken === true) {
-        console.log(`Did I make it here?${revokeRefreshToken}`);
         await lastValueFrom(
           this.http.post<any>(
             `${environment.apiUrl}/users/revoke-token`,
@@ -134,7 +133,6 @@ export class AccountService {
 
   async getGuilds() {
     try {
-      console.log('GET GUILDS');
       const _id = this.user._id;
       const guilds = await lastValueFrom(
         this.http.get<any[]>(`${environment.apiUrl}/users/${_id}/guilds`)
@@ -171,8 +169,7 @@ export class AccountService {
         this.http.get<any>(`${environment.apiUrl}/users/${_id}/albums`)
       );
       const albums = Array.isArray(response) ? response : response.albums;
-      console.log('Albums');
-      console.log(albums);
+
       //update a users albums
       this.user.albums = albums;
       localStorage.setItem('user', JSON.stringify(this.user));
@@ -241,6 +238,7 @@ export class AccountService {
       let integratedUser = await lastValueFrom(
         this.http.post<User>(`${environment.apiUrl}/users/integrate`, user)
       );
+      console.log(integratedUser);
       if (integratedUser._id) {
         //Attach non-integrated user's jwt to integratedUser value, this is necessary because we intercept incoming jwts.
         integratedUser.jwt = this.user.jwt;
@@ -301,7 +299,6 @@ export class AccountService {
         this.http.post(`${environment.apiUrl}/users/forgot-password`, emailObj)
       );
 
-      console.log(response);
       return response as any;
     } catch (err) {
       console.log(err);
@@ -384,84 +381,4 @@ export class AccountService {
       throw err;
     }
   }
-
-  /*async refreshToken() {
-    try {
-      const userId = this.user._id;
-      const jwtToken = await lastValueFrom(
-        this.http.post<any>(
-          `${environment.apiUrl}/users/refresh-token`,
-          {
-            userId,
-          },
-          { withCredentials: true }
-        )
-      );
-      /* .pipe(
-            map((jwt) => {
-              //upsdate jwt value
-              /*this.user.jwt = jwt;
-              localStorage.setItem('user', JSON.stringify(this.user));
-              this.userSubject.next(this.user);
-              this.startRefreshTokenTimer();
-              return jwt;
-            })
-          )
-      );
-
-      console.log('back from http: JWT IS:');
-      console.log(jwtToken);
-      //update jwt value
-      this.user.jwt = jwtToken;
-      this.userSubject.next(this.user);
-      console.log("User's jwt should have been updated as well");
-      console.log(this.user.jwt);
-      localStorage.setItem('user', JSON.stringify(this.user));
-      await this.startRefreshTokenTimer();
-      return;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
-  }*/
-  //Variable to track our refresh token timeout
-  private refreshTokenTimeout: any;
-  /**
-   * Timer for our refresh token, it will fire off one minute before token is set to expire.
-   */
-  /*private async startRefreshTokenTimer() {
-    try {
-      //parse json object from base64 encided jwt token
-      const jwtToken = JSON.parse(atob(this.user.jwt!.split('.')[1]));
-      console.log('Inside of start jwt timer');
-      console.log(jwtToken);
-      console.log(jwtToken.exp);
-      //set a timeout to refresh the token a minute before it expires
-      const expires = new Date(jwtToken.exp * 1000);
-      const timeout = expires.getTime() - Date.now() - 60 * 1000;
-      this.refreshTokenTimeout = setTimeout(
-        async () => await this.refreshToken(),
-        timeout
-      );
-
-      return;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
-  }*/
-
-  /**
-   * Clears the refresh token timer.
-   * @returns
-   */
-  private async stopRefreshTokenTimer() {
-    try {
-      clearTimeout(this.refreshTokenTimeout);
-      return;
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
-  }
-} //end servnice
+} //end service

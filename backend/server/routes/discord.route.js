@@ -1,9 +1,12 @@
+if (typeof localStorage === "undefined" || localStorage === null) {
+  var LocalStorage = require("node-localstorage").LocalStorage;
+  localStorage = new LocalStorage("./scratch");
+}
 //Route dependencies
 let express = require("express");
 var router = express.Router();
 //Module that allows for window.fetch to Node.js
 const fetch = require("node-fetch");
-
 //Middleware
 const verification_middleware = require("../middleware/verification.middleware");
 //Controllers
@@ -21,20 +24,6 @@ router.get("/token", getUserToken);
 router.post("refresh-user", verification_middleware.jwtCheck, refreshUserData);
 //Exports
 module.exports = router;
-
-/*async function accessDiscordAccount(req, res) {
-  try {
-    let userData = await discord_controller.accessUser(req);
-
-    const query = querystring.stringify({
-      data: userData,
-    });
-    res.redirect(302, `${process.env.CLIENT_PATH}/?${query}`);
-  } catch (err) {
-    console.log(err);
-    throw err;
-  }
-}*/
 
 async function installBot(req, res) {
   try {
@@ -94,13 +83,15 @@ async function exchangeUserInformationAgain(req, res) {
 
 async function integrate(req, res) {
   try {
-    const integratedUser = await discord_controller.integrateUser(req.body);
+    const response = await discord_controller.integrateUser(req.body);
+    const integratedUser = response.user;
     const areTokensNeeded = res.locals.refreshToken ? true : false;
     if (areTokensNeeded) {
       await token_helper.setTokenCookie(res, res.locals.refreshToken);
       integratedUser.jwt = res.locals.jwt;
     }
     res.send(integratedUser);
+    return;
   } catch (err) {
     console.log(err);
     throw err;

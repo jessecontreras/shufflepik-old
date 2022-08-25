@@ -156,8 +156,6 @@ async function removeUserImagesFromImagePool(userId, guildId) {
  */
 async function getRandomImage(guildId) {
   try {
-    console.log("this is connection");
-    console.log(Connection);
     let shufflepikQuery = await Connection.db
       .collection(ShufflepikCollection.Guilds)
       .aggregate([

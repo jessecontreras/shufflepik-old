@@ -55,8 +55,7 @@ export function upload(): (
     event: HttpEvent<unknown>
   ): Upload => {
     if (isHttpProgressEvent(event)) {
-      console.log('Event data');
-      console.log(event);
+
       return {
         progress: event.total
           ? Math.round((100 * event.loaded) / event.total)
