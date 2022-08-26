@@ -1,105 +1,112 @@
 <!--<div *ngIf="album" class="album-container">-->
 <div class="album-container">
+  <ng-container *ngIf="images.length < 1">
+    <div class="center-text">
+      <h1>This page intentionally left blank - Upload pics to this album.</h1>
+    </div>
+  </ng-container>
   <div class="grid grid--album">
     <!-- <ng-container
       *ngIf="images.length === sanitizedImages.length; else loadingTemplate"
     >-->
-    <ng-container *ngFor="let image of images; let i = index">
-      <div class="album-item">
-        <ng-container *ngIf="sanitizedImages[i]">
-          <!--<img [ngStyle] class="image" [src]="image" [alt]="images[i].image_title" />-->
-          <img
-            class="image"
-            [src]="sanitizedImages[i]"
-            [alt]="images[i].image_title"
-          />
-          <mat-icon
-            class="mobile-display-overlay"
-            (click)="displayOverlay(i)"
-            [ngClass]="{
-              'mobile-display-overlay--hide':
-                displayImageOverlay && imageIndex === i
-            }"
-            >more_horiz</mat-icon
-          >
-          <div
-            class="open-dialog-area"
-            (click)="
-              openImageDialog({
-                title: images[i].image_title,
-                date_posted: images[i].date_uploaded,
-                image_url: sanitizedImages[i]
-              })
-            "
-          ></div>
-          <div
-            class="overlay"
-            [ngClass]="{
-              'overlay--show': displayImageOverlay && imageIndex === i
-            }"
-          >
-            <div
+    <ng-container *ngIf="images.length > 0">
+      <ng-container *ngFor="let image of images; let i = index">
+        <div class="album-item">
+          <ng-container *ngIf="sanitizedImages[i]">
+            <!--<img [ngStyle] class="image" [src]="image" [alt]="images[i].image_title" />-->
+            <img
+              class="image"
+              [src]="sanitizedImages[i]"
+              [alt]="images[i].image_title"
+            />
+            <mat-icon
+              class="mobile-display-overlay"
+              (click)="displayOverlay(i)"
               [ngClass]="{
-                'overlay-content': !deleteImage || imageIndex != i,
-                'overlay-content--delete': deleteImage && imageIndex === i
+                'mobile-display-overlay--hide':
+                  displayImageOverlay && imageIndex === i
+              }"
+              >more_horiz</mat-icon
+            >
+            <div
+              class="open-dialog-area"
+              (click)="
+                openImageDialog({
+                  title: images[i].image_title,
+                  date_posted: images[i].date_uploaded,
+                  image_url: sanitizedImages[i]
+                })
+              "
+            ></div>
+            <div
+              class="overlay"
+              [ngClass]="{
+                'overlay--show': displayImageOverlay && imageIndex === i
               }"
             >
-              <mat-icon
-                *ngIf="!deleteImage || imageIndex != i"
-                class="delete-icon material-icons-outlined"
-                (click)="deleteImageTrue(i)"
-              >
-                delete
-              </mat-icon>
               <div
-                *ngIf="!deleteImage || imageIndex != i"
-                class="overlay-content-date"
+                [ngClass]="{
+                  'overlay-content': !deleteImage || imageIndex != i,
+                  'overlay-content--delete': deleteImage && imageIndex === i
+                }"
               >
-                {{ images[i].date_uploaded | parseDate | formatDate }}
-              </div>
-              <div
-                *ngIf="!deleteImage || imageIndex != i"
-                class="overlay-content-title"
-              >
-                {{ images[i].image_title }}
-              </div>
-              <mat-icon
-                *ngIf="!deleteImage || imageIndex != i"
-                class="overlay-content-close"
-                (click)="hideOverlay()"
-              >
-                close
-              </mat-icon>
+                <mat-icon
+                  *ngIf="!deleteImage || imageIndex != i"
+                  class="delete-icon material-icons-outlined"
+                  (click)="deleteImageTrue(i)"
+                >
+                  delete
+                </mat-icon>
+                <div
+                  *ngIf="!deleteImage || imageIndex != i"
+                  class="overlay-content-date"
+                >
+                  {{ images[i].date_uploaded | parseDate | formatDate }}
+                </div>
+                <div
+                  *ngIf="!deleteImage || imageIndex != i"
+                  class="overlay-content-title"
+                >
+                  {{ images[i].image_title }}
+                </div>
+                <mat-icon
+                  *ngIf="!deleteImage || imageIndex != i"
+                  class="overlay-content-close"
+                  (click)="hideOverlay()"
+                >
+                  close
+                </mat-icon>
 
-              <div *ngIf="deleteImage && imageIndex === i">
-                Are you sure you want to delete image?
-              </div>
-              <div
-                *ngIf="deleteImage && imageIndex === i"
-                class="delete-image-option"
-                (click)="deleteSelectedImage(images[i])"
-              >
-                Yes
-              </div>
-              <div
-                *ngIf="deleteImage && imageIndex === i"
-                class="delete-image-option"
-                (click)="deleteImageFalse()"
-              >
-                No
+                <div *ngIf="deleteImage && imageIndex === i">
+                  Are you sure you want to delete image?
+                </div>
+                <div
+                  *ngIf="deleteImage && imageIndex === i"
+                  class="delete-image-option"
+                  (click)="deleteSelectedImage(images[i])"
+                >
+                  Yes
+                </div>
+                <div
+                  *ngIf="deleteImage && imageIndex === i"
+                  class="delete-image-option"
+                  (click)="deleteImageFalse()"
+                >
+                  No
+                </div>
               </div>
             </div>
-          </div>
-        </ng-container>
-        <ng-container *ngIf="!sanitizedImages[i]">
-          <div class="album-item">
-            <div class="image--loading"></div>
-          </div>
-        </ng-container>
-        <!--<ng-container *ngIf="images[i] != sanitizedImages[i]">
+          </ng-container>
+          <ng-container *ngIf="!sanitizedImages[i]">
+            <div class="album-item">
+              <div class="image--loading"></div>
+            </div>
+          </ng-container>
+          <!--<ng-container *ngIf="images[i] != sanitizedImages[i]">
           <div class="image--loading"></div>
         </ng-container>-->
-      </div>
+        </div>
+      </ng-container>
     </ng-container>
     <!--</ng-container>-->
     <!-- <ng-template #loadingTemplate>

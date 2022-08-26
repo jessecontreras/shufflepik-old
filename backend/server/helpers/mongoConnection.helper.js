@@ -19,8 +19,6 @@ class Connection {
     } catch (err) {
       console.log(err);
       throw err;
-    } finally {
-      await this.db.close();
     }
   }
   /**

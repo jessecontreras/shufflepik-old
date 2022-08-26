@@ -22,7 +22,6 @@ const Handlebars = require("handlebars");
 let dayjs = require("dayjs");
 //Set up our local storage mechanism
 
-
 //const MongoClient = require("mongodb").MongoClient;
 
 //Local dependencies
@@ -56,7 +55,7 @@ const Response = {
   ExistingUser:
     "An account with this email already exists, please try another email.",
   UserToIntegrateAlreadyConnected:
-    "This Discord user is already connected to Shufflepik. Only one Discord user per Shufflepik account allowed.",
+    "This Discord user is already connected to Shufflepik. Only one Discord user per Shufflepik account allowed. Hard refresh page if you connected in a different tab.",
   CreatedUser: "Ahh yeah account successfully created !",
   UserDNE:
     "This user does not exist. Please contact us if you believe this is a mistake.",

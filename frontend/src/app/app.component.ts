@@ -75,7 +75,7 @@ export class AppComponent {
       console.log('%c👀', backgroundImage);
 
       console.log(
-        "%cHey curious critter! If you'd like to help us make Shufflepik a better experience through feedback hit us up 📧 via info@shufflpik.com. If you'd like to make the app better through development hit up our main squeeze 👨‍💻 via jesse@shufflepik.com",
+        "%cHey curious critter! If you'd like to help us make Shufflepik a better experience through feedback hit us up 📧 info@shufflpik.com. If you'd like to make the app better through development hit up our main squeeze 👨‍💻 jesse@shufflepik.com",
         'font-size:20px; background-color:#4e54c8; color: white'
       );
       console.log(

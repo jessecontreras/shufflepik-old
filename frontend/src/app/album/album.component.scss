@@ -16,6 +16,13 @@ $sp-purple: #4e54c8;
   //header height + header padding + grid row gap
   margin-bottom: calc(50px + 10px + 7.5px);
 }
+.center-text {
+  margin: auto;
+  max-width: 640px;
+  padding: 50px;
+  color: $sp-purple;
+  text-align: center;
+}
 
 .grid--album,
 .overlay,

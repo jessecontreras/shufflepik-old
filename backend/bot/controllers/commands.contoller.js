@@ -98,6 +98,7 @@ async function shufflepik(guildId, userId, gMembers = null) {
         nsfw: imageData.nsfw,
         flags: imageData.flags,
         avatar: member.user.avatar,
+        uploadedByDiscordId: imageData.uploaded_by_discord_id,
       };
 
       return randomImage;
@@ -256,8 +257,6 @@ async function getImageReferences(userId, guildId) {
  *     ...
  * };
  */
-
-
 
 /**
  * Moves user's content from active server pool(s) to DELETED_CONTENT collection.

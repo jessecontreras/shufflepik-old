@@ -30,6 +30,7 @@ module.exports = {
             await interaction.editReply({ embeds: [embed] });
             return;
           }
+
           //Return the filename and extension of image
           //looks like -> uploads/xxxxxxxxxxxx/filename.ext ~ We want -> filename.ext
           const fileNameAndExt = randomImageData.imageUrl.split("/")[3];
@@ -40,9 +41,10 @@ module.exports = {
             )
           );
           const placeholderIcon = "https://i.imgur.com/2cywyH9.png";
-          const messageAuthorIcon = randomImageData.avatar
-            ? `https://cdn.discordapp.com/avatars/${interaction.user.id}/${randomImageData.avatar}.png`
+          const uploadAuthorIcon = randomImageData.avatar
+            ? `https://cdn.discordapp.com/avatars/${randomImageData.uploadedByDiscordId}/${randomImageData.avatar}.png`
             : placeholderIcon;
+
           //Wrap dateUploaded string with date.toLocaleString object to get localized, in this case PST (PT) date object.
           let pst = new Date(randomImageData.dateUploaded).toLocaleString(
             "en-US",
@@ -55,7 +57,7 @@ module.exports = {
             .setTitle(randomImageData.imageTitle)
             .setAuthor({
               name: `Posted by : ${randomImageData.uploadedByUsername}`,
-              iconURL: messageAuthorIcon,
+              iconURL: uploadAuthorIcon,
               url: `https://shufflepik.com`,
             })
             .addField(
