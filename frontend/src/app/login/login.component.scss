@@ -69,6 +69,25 @@ $sp-purple: #4e54c8;
     //border-bottom: 1px solid #fff;
   }
 
+  .loader {
+    border: 7px solid #f3f3f3; /* Light grey */
+    border-top: 7px solid $sp-purple; /* Blue */
+    border-radius: 50%;
+    width: 10px;
+    height: 10px;
+    position: relative;
+    left: calc(50% - 10px);
+    animation: spin 2s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
   .email {
     grid-row: 3/5;
     //align-self: start;

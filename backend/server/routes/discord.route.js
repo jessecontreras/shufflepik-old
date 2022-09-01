@@ -1,7 +1,4 @@
-if (typeof localStorage === "undefined" || localStorage === null) {
-  var LocalStorage = require("node-localstorage").LocalStorage;
-  localStorage = new LocalStorage("./scratch");
-}
+
 //Route dependencies
 let express = require("express");
 var router = express.Router();

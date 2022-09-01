@@ -30,6 +30,8 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   //Boolean indicator of from submission
   submitted = false;
+  //Boolean indicator of submission process
+  processingSubmit = false;
   //Error message string
   error = '';
   //Placeholder for email
@@ -84,20 +86,24 @@ export class LoginComponent implements OnInit {
   async onLoginSubmit() {
     try {
       this.submitted = true;
+      this.processingSubmit = true;
       //Email error check
 
       if (this.f['email'].errors) {
         this.f['email'].reset();
         this.emailPlaceholder = 'Please enter a valid Email';
+        this.processingSubmit = false;
       }
 
       //Password error check
       if (this.f['password'].errors) {
         this.f['password'].reset();
         this.passwordPlaceholder = 'Please enter a valid Password';
+        this.processingSubmit = false;
       }
       // stop here if form is invalid
       if (this.loginForm.invalid) {
+        this.processingSubmit = false;
         return;
       }
 
@@ -106,12 +112,12 @@ export class LoginComponent implements OnInit {
         this.f['password'].value
       );
 
-
       if (response?._id) {
         // get return url from query parameters or default to home page
         const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
         this.router.navigateByUrl(returnUrl);
       } else {
+        this.processingSubmit = false;
         this._snackbar.openSnackBar(response, 'OK', 'dangerous', 5);
       }
     } catch (err) {

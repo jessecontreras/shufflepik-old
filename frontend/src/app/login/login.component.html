@@ -32,7 +32,8 @@
       Forgot Password?
     </div>
     <button matRipple class="login-button">
-      <h3>Login</h3>
+      <h3 *ngIf="!processingSubmit">Login</h3>
+      <div *ngIf="processingSubmit" class="loader"></div>
     </button>
     <div *ngIf="error" class="">{{ error }}</div>
   </form>
