@@ -70,8 +70,7 @@ async function generateRefreshToken() {
 async function generateJwtToken(userId) {
   try {
     return jwt.sign({ sub: userId }, process.env.SECRETO_DE_AMOR, {
-      //expiresIn: '15m',
-      expiresIn: 30,
+      expiresIn: "15m",
     });
   } catch (err) {
     console.log(err);
@@ -87,14 +86,11 @@ async function generateJwtToken(userId) {
  */
 async function getRefreshToken(userId) {
   try {
-
-
     const dbUser = await Connection.db
       .collection(ShufflepikCollection.Users)
       .findOne({
         _id: ObjectId(userId),
       });
-
 
     if (!dbUser.refresh_token) return false;
     const isRefreshTokenValid = await verifyRefreshToken(
@@ -134,11 +130,8 @@ async function verifyRefreshToken(refreshTokenExpiration) {
  */
 async function refreshToken(userId) {
   try {
-
-
     const refreshToken = await getRefreshToken(userId);
     if (!refreshToken) return false;
-
 
     //Replace old refresh token with a new one and save
     const newRefreshToken = await generateRefreshToken();
