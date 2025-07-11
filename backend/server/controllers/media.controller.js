@@ -289,7 +289,7 @@ async function deleteUserAccountImages(imageLocationReferences) {
     if (imageLocationReferences.length <= 0) return;
 
     //TODO: FIX IMAGE REFERENCES THERE ARE TOO MANY OF THEM...
-    for (i = 0; i < imageLocationReferences.length; i++) {
+    for (let i = 0; i < imageLocationReferences.length; i++) {
    
       let currentUrl = imageLocationReferences[i].image_url;
 

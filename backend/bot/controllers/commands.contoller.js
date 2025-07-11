@@ -194,7 +194,7 @@ async function getRandomImage(guildId) {
  */
 async function deleteUserAccountImages(imageLocationReferences) {
   try {
-    for (i = 0; i < imageLocationReferences.length; i++) {
+    for (let i = 0; i < imageLocationReferences.length; i++) {
       //This refers to path saved in db which references /server directory refrence looks like --> /uploads/guildId/filename
       let currentUrl = imageLocationReferences[i].image_url;
       //Since all media (paths) are based in the server directory we need to go up a directories
