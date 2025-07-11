@@ -123,6 +123,19 @@ async function isFileTooLarge(file) {
   }
 }
 
+function computeQuality(size) {
+  if (size < maxFileSize && size > maxFileSize / 2) {
+    return 45;
+  }
+  if (size <= maxFileSize / 2 && size > maxFileSize / 4) {
+    return 50;
+  }
+  if (size <= maxFileSize / 4 && size > maxFileSize / 10) {
+    return 60;
+  }
+  return 65;
+}
+
 /**
  *
  * @param { object } imageData - image data object. Contains
@@ -189,84 +202,24 @@ async function extractGuildsAndReturnArray(payload) {
  */
 async function moveImageToGuildDir(payload) {
   try {
-    //Un-[Object: null prototype]-ify payload paramater.
     const payloadObj = JSON.parse(JSON.stringify(payload.body));
-    //Guilds array
     const guilds = await extractGuildsAndReturnArray(payloadObj);
-    //Location of temporary upload.
-    const src = payload.file.path;
 
-    //Store permanent source location(s) for image references.
-    let uploadDestinations = [];
-    //If more than one guild selected iterate through guilds and place uploads accordingly, otherwise place upload in the single guild selected.
-    if (guilds.length > 1) {
-      //For every guild selected by user, place upload in respective directory.
-      for (let i = 0; i < guilds.length; i++) {
-        //If payload's file.filename property is present that will be th filename otherwise it will be file.originalname
-        const fileName = payload.file.filename
-          ? payload.file.filename
-          : payload.file.originalname;
-        //Destination folder for this specific guild
-        //MOD:Changing from `./uploads/${guilds[i]}`; --> `../uploads/${guilds[i]}`
-        const dir = `./uploads/${guilds[i]}`;
-        //Destination folder with file included.
-        const file = `${dir}/${Date.now()}${fileName}`;
-        //Store destination location in uploadDestinations array
-        uploadDestinations.push(file);
-        //Ensure directory exists, if not create it.
-        const ensureFile = await fse.ensureFile(file);
-        let qualityOfImage;
-        if (
-          payload.file.size < maxFileSize &&
-          payload.file.size > maxFileSize / 2
-        ) {
-          qualityOfImage = 45;
-        } else if (
-          payload.file.size <= maxFileSize / 2 &&
-          payload.file.size > maxFileSize / 4
-        ) {
-          qualityOfImage = 50;
-        } else if (
-          payload.file.size <= maxFileSize / 4 &&
-          payload.file.size > maxFileSize / 10
-        ) {
-          qualityOfImage = 60;
-        } else {
-          qualityOfImage = 65;
-        }
-        //Copy image from source location to destination location
-        // const copyFinished = fse.copySync(src, dest);
-        //Copy image to respective directory/location
-        //With 'force' set to false, sharp should respect input extension instead of converting to jpeg.
+    const qualityOfImage = computeQuality(payload.file.size);
+    let fileName = payload.file.filename
+      ? payload.file.filename
+      : payload.file.originalname;
+    fileName = fileName.replace(/\s/g, "");
 
-        const image = await sharp(payload.file.buffer)
-          .jpeg({
-            quality: qualityOfImage,
-            force: false,
-          })
-          .toFile(file);
-      }
-    } else {
-      //If payload's file.filename property is present that will be th filename otherwise it will be file.originalname
-      const fileName = payload.file.filename
-        ? payload.file.filename
-        : payload.file.originalname;
-      //Destination folder for this specific guild
-      //MOD:Changing from `./uploads/${guilds[i]}`; --> `../uploads/${guilds[i]}`
-      const dir = `./uploads/${guilds[0]}`;
-      //Destination folder with file included.
-      let file = `${dir}/${Date.now()}${fileName}`;
-      //Remove whitespace from file name
-      file = file.replace(/\s/g, "");
-      //Store destination location in uploadDestinations array
+    const uploadDestinations = [];
+    for (const guild of guilds) {
+      const dir = path.join("./uploads", guild);
+      const file = path.join(dir, `${Date.now()}${fileName}`);
       uploadDestinations.push(file);
-      //Ensure directory exists, if not create it.
-      const ensureFile = await fse.ensureFile(file);
-
-      //With 'force' set to false, sharp should respect input extension instead of converting to jpeg.
-      const image = await sharp(payload.file.buffer)
+      await fse.ensureFile(file);
+      await sharp(payload.file.buffer)
         .jpeg({
-          quality: 65,
+          quality: qualityOfImage,
           force: false,
         })
         .toFile(file);
