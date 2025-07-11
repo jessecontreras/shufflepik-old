@@ -4,7 +4,7 @@ const { Connection } = require("../../server/helpers/mongoConnection.helper");
 //Controller object
 let controller = {};
 //const db_controller = require("../../server/controllers/db.controller");
-const fs = require("fs-extra");
+const { moveFilesToDeletedMedia } = require("../../server/helpers/fileMover");
 //dayjs instance
 const dayjs = require("dayjs");
 const { Client, Intents } = require("discord.js");
@@ -194,27 +194,8 @@ async function getRandomImage(guildId) {
  */
 async function deleteUserAccountImages(imageLocationReferences) {
   try {
-    for (i = 0; i < imageLocationReferences.length; i++) {
-      //This refers to path saved in db which references /server directory refrence looks like --> /uploads/guildId/filename
-      let currentUrl = imageLocationReferences[i].image_url;
-      //Since all media (paths) are based in the server directory we need to go up a directories
-      const serverDir = `../server`;
-      //Current (relative) location of file to be moved
-      const currentLoc = `${serverDir}${currentUrl}`;
-      //The subdirectory of 'delete-media' directory to store deleted image.
-      const subDir = currentUrl.split("/")[2];
-      //Filename of file to move from live directory to 'delete-media' directory.
-      const fileName = currentUrl.split("/")[3];
-      //File to be moved, final directory destination included.
-      //MOD:Changing from `./deleted-media/${subDir}/${fileName}`; --> `../deleted-media/${subDir}/${fileName}`;
-      const deletedDirLoc = `../server/deleted-media/${subDir}`;
-      const deletedFileLoc = `${deletedDirLoc}/${fileName}`;
-      //Ensure directory exists
-      await fs.ensureDir(deletedDirLoc);
-      //move file from live directory to non-live directory
-      await fs.move(currentLoc, deletedFileLoc);
-      //await fs.move(currentLoc, deletedFileLoc, { overwrite: true });
-    }
+    const paths = imageLocationReferences.map((ref) => ref.image_url);
+    await moveFilesToDeletedMedia(paths);
     return;
   } catch (err) {
     console.log(err);
