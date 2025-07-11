@@ -9,6 +9,7 @@ tokenHelper.refreshToken = refreshToken;
 tokenHelper.generateJwtToken = generateJwtToken;
 tokenHelper.generateRefreshToken = generateRefreshToken;
 tokenHelper.getRefreshToken = getRefreshToken;
+tokenHelper.respondWithAuth = respondWithAuth;
 //Local dependencies¸¸¸¸¸¸¸¸
 //Third party dependencies
 const jwt = require("jsonwebtoken");
@@ -190,6 +191,25 @@ async function setTokenCookie(res, token) {
     };
     res.cookie("refreshToken", token, cookieOptions);
     return;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+async function respondWithAuth(res, payload) {
+  try {
+    if (res.locals && res.locals.refreshToken) {
+      await setTokenCookie(res, res.locals.refreshToken);
+      if (payload && typeof payload === "object" && !Array.isArray(payload)) {
+        payload.jwt = res.locals.jwt;
+        res.json(payload);
+      } else {
+        res.json({ jwt: res.locals.jwt, data: payload });
+      }
+    } else {
+      res.json(payload);
+    }
   } catch (err) {
     console.log(err);
     throw err;
