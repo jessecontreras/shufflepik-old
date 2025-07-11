@@ -6,6 +6,7 @@ const util = require("util");
 const multer = require("multer");
 const path = require("path");
 const fse = require("fs-extra");
+const { moveFilesToDeletedMedia } = require("../helpers/fileMover");
 let dayjs = require("dayjs");
 
 const sharp = require("sharp");
@@ -146,18 +147,10 @@ async function deleteImage(imageData) {
     //The discord id is in the image_URL, it's the digits between slashes (the number before the final slash and name of image);
     //Since our image_URL is structured 'uploads/discordID/imageName, we will simply extact the discord id from this string.
     imageData.discord_id = imageData.image_url.split("/")[2];
-    //Current (relative) location of file to be moved
-    const currentLoc = `.${imageData.image_url}`;
-    //The subdirectory of 'delete-media' directory to store deleted image.
-    const subDir = imageData.image_url.split("/")[2];
-    //Filename of file to move from live directory to 'delete-media' directory.
-    const fileName = imageData.image_url.split("/")[3];
-    //File to be moved, final directory destination included.
-    const deletedFileLoc = `./deleted-media/${subDir}/${fileName}`;
-    //Ensure directory exists
-    await fse.ensureDir(`./deleted-media/${subDir}`);
-    //move file from live directory to non-live directory
-    await fse.move(currentLoc, deletedFileLoc, { overwrite: true });
+
+    //Move file to deleted-media directory
+    await moveFilesToDeletedMedia([imageData.image_url]);
+
     //Remove image from database
     let deletedImage = await db_controller.deleteImage(imageData);
 
@@ -241,31 +234,9 @@ async function deleteUserAccountImages(imageLocationReferences) {
   try {
     if (imageLocationReferences.length <= 0) return;
 
-    //TODO: FIX IMAGE REFERENCES THERE ARE TOO MANY OF THEM...
-    for (i = 0; i < imageLocationReferences.length; i++) {
-   
-      let currentUrl = imageLocationReferences[i].image_url;
-
-
-      //Current (relative) location of file to be moved
-      const currentLoc = `.${currentUrl}`;
-      //The subdirectory of 'delete-media' directory to store deleted image.
-      const subDir = currentUrl.split("/")[2];
-      //Filename of file to move from live directory to 'delete-media' directory.
-      const fileName = currentUrl.split("/")[3];
-      //File to be moved, final directory destination included.
-      //MOD:Changing from `./deleted-media/${subDir}/${fileName}`; --> `../deleted-media/${subDir}/${fileName}`;
-      //const deletedDirLoc = `../deleted-media/${subDir}`;
-      //const deletedDirLoc = `./deleted-media/${subDir}`;
-      //const deletedFileLoc = `${deletedDirLoc}/${fileName}`;
-      //File to be moved, final directory destination included.
-      const deletedFileLoc = `./deleted-media/${subDir}/${fileName}`;
-      //Ensure directory exists
-      await fse.ensureDir(`./deleted-media/${subDir}`);
-      //move file from live directory to non-live directory
-      await fse.move(currentLoc, deletedFileLoc);
-      //await fse.move(currentLoc, deletedFileLoc, { overwrite: true });
-    }
+    //Move all files to deleted-media directory
+    const paths = imageLocationReferences.map((ref) => ref.image_url);
+    await moveFilesToDeletedMedia(paths);
     return;
   } catch (err) {
     console.log(err);
