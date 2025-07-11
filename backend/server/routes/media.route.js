@@ -20,23 +20,8 @@ module.exports = router;
 
 async function deleteImage(req, res) {
   try {
-
     const deletedImage = await media_controller.deleteImage(req.body);
-
-    const areTokensNeeded = res.locals.refreshToken ? true : false;
-    let dataToSendToClient;
-    if (areTokensNeeded) {
-      await token_helper.setTokenCookie(res, res.locals.refreshToken);
-      //deletedImage.jwt = res.locals.jwt;
-      dataToSendToClient = {
-        jwt: res.locals.jwt,
-        deletedImage: deletedImage,
-      };
-    } else {
-      dataToSendToClient = deletedImage;
-    }
-
-    res.json(dataToSendToClient);
+    await token_helper.respondWithAuth(res, deletedImage);
   } catch (err) {
     console.log(err);
     throw err;

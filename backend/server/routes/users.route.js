@@ -184,21 +184,7 @@ async function albums(req, res) {
   try {
     const _id = req.params._id;
     const albums = await user_controller.getAlbums(_id);
-    const areTokensNeeded = res.locals.refreshToken ? true : false;
-    let dataToSendToClient;
-    if (areTokensNeeded) {
-      dataToSendToClient = {
-        jwt: res.locals.jwt,
-        albums: albums,
-      };
-      //dataToSendToClient.jwt = res.locals.jwt;
-      await token_helper.setTokenCookie(res, res.locals.refreshToken);
-    } else {
-      dataToSendToClient = albums;
-    }
-    //res.send(albums);
-    //res.send({ jwt: jwtToken, albums: albums });
-    res.send(dataToSendToClient);
+    await token_helper.respondWithAuth(res, { albums });
   } catch (err) {
     console.log(err);
     throw err;
@@ -209,19 +195,7 @@ async function guilds(req, res) {
   try {
     const _id = req.params._id;
     const guilds = await user_controller.getGuilds(_id);
-    const areTokensNeeded = res.locals.refreshToken ? true : false;
-    let dataToSendtoClient;
-    if (areTokensNeeded) {
-      await token_helper.setTokenCookie(res, res.locals.refreshToken);
-      dataToSendtoClient = {
-        jwt: res.locals.jwt,
-        guilds: guilds,
-      };
-    } else {
-      dataToSendtoClient = guilds;
-    }
-
-    res.send(dataToSendtoClient);
+    await token_helper.respondWithAuth(res, { guilds });
     return;
   } catch (err) {}
 }
@@ -231,21 +205,7 @@ async function images(req, res) {
     const _id = req.params._id;
     const albumId = req.params.albumId;
     const images = await user_controller.getImages(_id, albumId);
-    const areTokensNeeded = res.locals.refreshToken ? true : false;
-
-    let dataToSendToClient;
-    if (areTokensNeeded) {
-      await token_helper.setTokenCookie(res, res.locals.refreshToken);
-      dataToSendToClient = {
-        jwt: res.locals.jwt,
-        images: images,
-      };
-    } else {
-      dataToSendToClient = images;
-    }
-
-    //res.send(images);
-    res.send(dataToSendToClient);
+    await token_helper.respondWithAuth(res, { images });
   } catch (err) {
     console.log(err);
     throw err;
