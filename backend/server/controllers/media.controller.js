@@ -144,8 +144,9 @@ function computeQuality(size) {
  */
 async function deleteImage(imageData) {
   try {
-    //The discord id is in the image_URL, it's the digits between slashes (the number before the final slash and name of image);
-    //Since our image_URL is structured 'uploads/discordID/imageName, we will simply extact the discord id from this string.
+    // Our image_URL is formatted as 'uploads/<discordID>/<imageName>'.
+    // The Discord ID is the numeric segment between the two slashes.
+    // We’ll parse the URL and pull out that ID.
     imageData.discord_id = imageData.image_url.split("/")[2];
 
     //Move file to deleted-media directory
